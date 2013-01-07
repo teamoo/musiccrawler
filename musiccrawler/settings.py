@@ -17,3 +17,8 @@ NEWSPIDER_MODULE = 'musiccrawler.spiders'
 MEMUSAGE_ENABLED = False
 MEMUSAGE_NOTIFY_MAIL = ['thimo.brinkmann@googlemail.com']
 MEMUSAGE_WARNING_MB = 500
+
+ITEM_PIPELINES = [
+    'musiccrawler.pipeline.CheckMusicDownloadLinkPipeline',
+    'musiccrawler.pipeline.DuplicateURLsPipeline',
+]

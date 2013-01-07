@@ -7,15 +7,13 @@
 # -Sid
 
 from scrapy.spider import BaseSpider
-
 from scrapy.selector import HtmlXPathSelector
 from scrapy.selector import XmlXPathSelector
 from scrapy.http import Request
+
 import feedparser
 import re
 import urlparse
-
-
 
 class FeedSpider(BaseSpider):
     name = "feedspider"
