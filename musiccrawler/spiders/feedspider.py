@@ -2,7 +2,7 @@
 # The scripts processes only certain elements in the feeds(title, link and summary)
 # The items may be saved in the Item pipeline which I leave to you.
 #
-# Please let me know about any discrepencies you may find in the technical and functional aspects of this scipt.
+# Please let me know about any discrepencies you may find in the technical and functional aspects of this script.
 #
 # -Sid
 
@@ -10,6 +10,9 @@ from scrapy.spider import BaseSpider
 from scrapy.selector import HtmlXPathSelector
 from scrapy.selector import XmlXPathSelector
 from scrapy.http import Request
+
+from musiccrawler.items import RssFeedItem
+from musiccrawler.items import RssEntryItem
 
 import feedparser
 import re
@@ -20,7 +23,6 @@ class FeedSpider(BaseSpider):
     allowed_domain = ["tanzdurchdenkiez.de"]
     start_urls = [
                   "http://www.tanzdurchdenkiez.de/feed/"
-                  
                   ]
     _date_pattern = re.compile( \
                                r'(\d{,2})/(\d{,2})/(\d{4}) (\d{,2}):(\d{2}):(\d{2})');
@@ -111,7 +113,7 @@ class FeedSpider(BaseSpider):
                         r['entries'] = list();
                     
                     if 'published_parsed' in entry_dict:
-                        entry_item.update({ 'published':date_handler(entry_dict('published_parsed'))});
+                        entry_item.update({ 'published':self.dateHandler(self,entry_dict('published_parsed'))});
                     else:
                         entry_item.update(entry_dict);
                     r['entries'].append(entry_item);
@@ -127,9 +129,8 @@ class FeedSpider(BaseSpider):
                 int(hour), int(minute), int(second), 0, 0, 0);
 
 
-
 class MalformedURLException(Exception):
-	def __init__(self, value):
-		self.value = value
-	def __str__(self):
-		return repr(self.value)
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return repr(self.value)

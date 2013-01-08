@@ -1,8 +1,12 @@
 from scrapy.contrib.exporter import BaseItemExporter
 from SOAPpy import WSDL
 
+import musiccrawler
+
 class SOAPWSExporter(BaseItemExporter):
-    wsdlFile = 'http://musiclink.webcomsult.de/v2/index.php?wsdl'
+    export_empty_fields = True
+        
+    wsdlFile = musiccrawler.settings['WSDL_FILE']
     server = WSDL.Proxy(wsdlFile)
 
     def export_item(self, item):

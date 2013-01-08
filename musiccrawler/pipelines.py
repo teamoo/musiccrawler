@@ -6,22 +6,24 @@
 from py4j.java_gateway import JavaGateway
 from py4j.protocol import Py4JError
 from scrapy.exceptions import DropItem
+from scrapy import signals
+from musiccrawler.exporters import SOAPWSExporter
 import json
 import re
 import traceback
 
 class CheckMusicDownloadLinkPipeline(object):
-    def __init__(self):
-        gateway = JavaGateway(auto_convert=True)
-        self.mdlb = gateway.entry_point.getMusicDownloadLinkBuilder()
-        self.urlregex = re.compile(
+    urlregex = re.compile(
         r'^(?:http|ftp)s?://' # http:// or https://
         r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|' #domain...
         r'localhost|' #localhost...
         r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' # ...or ip
         r'(?::\d+)?' # optional port
         r'(?:/?|[/?]\S+)$', re.IGNORECASE)
-        
+    
+    def __init__(self):
+        gateway = JavaGateway(auto_convert=True)
+        self.mdlb = gateway.entry_point.getMusicDownloadLinkBuilder()
     
     def process_item(self, item, spider):
         try:
@@ -45,5 +47,24 @@ class DuplicateURLsPipeline(object):
         else:
             self.urls_seen.add(item['urls'])
             return item
+        
+class SOAPWSExportPipeline(object):
+    def __init__(self):
+        self.exporter = SOAPWSExporter(export_empty_fields=True);
 
-            
+    @classmethod
+    def from_crawler(cls, crawler):
+        pipeline = cls()
+        crawler.signals.connect(pipeline.spider_opened, signals.spider_opened)
+        crawler.signals.connect(pipeline.spider_closed, signals.spider_closed)
+        return pipeline
+
+    def spider_opened(self, spider):
+        self.exporter.start_exporting()
+
+    def spider_closed(self, spider):
+        self.exporter.finish_exporting()
+
+    def process_item(self, item, spider):
+        self.exporter.export_item(item)
+        return item
