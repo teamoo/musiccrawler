@@ -37,7 +37,6 @@ class CheckMusicDownloadLinkPipeline(object):
             traceback.print_exc()
             
 class DuplicateURLsPipeline(object):
-
     def __init__(self):
         self.urls_seen = set()
 

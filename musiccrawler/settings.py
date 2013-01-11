@@ -22,9 +22,9 @@ MEMUSAGE_NOTIFY_MAIL = ['thimo.brinkmann@googlemail.com']
 MEMUSAGE_WARNING_MB = 800
 
 ITEM_PIPELINES = [
-    'musiccrawler.pipeline.DuplicateURLsPipeline',
-    #'musiccrawler.pipeline.CheckMusicDownloadLinkPipeline',
-    #'musiccrawler.pipeline.SOAPWSExportPipeline'
+    'musiccrawler.pipelines.DuplicateURLsPipeline',
+    #'musiccrawler.pipelines.CheckMusicDownloadLinkPipeline',
+    #'musiccrawler.pipelines.SOAPWSExportPipeline'
 ]
 
 SPIDER_CONTRACTS = [
