@@ -14,6 +14,9 @@ import re
 import json
 import math
 import musiccrawler.settings
+import monthdelta
+from datetime import datetime
+from time import mktime
 from musiccrawler.items import DownloadLinkItem
 
 class FeedSpider(BaseSpider):        
@@ -43,31 +46,34 @@ class FeedSpider(BaseSpider):
             rssFeed = feedparser.parse(response.url)
             
             if rssFeed.bozo == 1:
-                log.msg(str("Feed kann nicht verarbeitet werden:", response.url), level=log.INFO)
+                log.msg(("Feed kann nicht verarbeitet werden:" + str(response.url)), level=log.INFO)
             else:
-                if 'title' in rssFeed:
-                    log.msg(str("Verarbeite Feed:", rssFeed), level=log.INFO)
+                log.msg(("Verarbeite Feed:" + rssFeed.get('title', response.url)), level=log.INFO)
                 for entry in rssFeed.entries:
-                    for regexpr in self.regexes:
-                        if 'summary' in entry:
-                            iterator = regexpr.finditer(str(entry.summary))
-                            for match in iterator:
-                                linkitem = DownloadLinkItem()
-                                linkitem['url'] = match.group().split('" ')[0]
-                                linkitem['source'] = str(self.start_urls[0])
-                                yield linkitem
-                        if 'content' in entry:
-                            iterator = regexpr.finditer(str(entry.content))
-                            for match in iterator:
-                                linkitem = DownloadLinkItem()
-                                linkitem['url'] = match.group().split('" ')[0]
-                                linkitem['source'] = str(self.start_urls[0])
-                                yield linkitem
-                        if 'links' in entry:
-                            iterator = regexpr.finditer(str(entry.links))
-                            for match in iterator:
-                                linkitem = DownloadLinkItem()
-                                linkitem['url'] = match.group().split('" ')[0]
-                                linkitem['source'] = str(self.start_urls[0])
-                                yield linkitem
+                    if (datetime.now() - monthdelta.MonthDelta(6)) < datetime.fromtimestamp(mktime(rssFeed.entries[0].published_parsed)):
+                        log.msg(("Verarbeite Eintrag:" + entry.get('title', "unnamed entry")), level=log.DEBUG)
+                        for regexpr in self.regexes:
+                            if 'summary' in entry:
+                                iterator = regexpr.finditer(str(entry.summary))
+                                for match in iterator:
+                                    linkitem = DownloadLinkItem()
+                                    linkitem['url'] = match.group().split('" ')[0]
+                                    linkitem['source'] = str(self.start_urls[0])
+                                    yield linkitem
+                            if 'content' in entry:
+                                iterator = regexpr.finditer(str(entry.content))
+                                for match in iterator:
+                                    linkitem = DownloadLinkItem()
+                                    linkitem['url'] = match.group().split('" ')[0]
+                                    linkitem['source'] = str(self.start_urls[0])
+                                    yield linkitem
+                            if 'links' in entry:
+                                iterator = regexpr.finditer(str(entry.links))
+                                for match in iterator:
+                                    linkitem = DownloadLinkItem()
+                                    linkitem['url'] = match.group().split('" ')[0]
+                                    linkitem['source'] = str(self.start_urls[0])
+                                    yield linkitem
+                    else:
+                        log.msg(("Feed-Entry is older than 6 month:" + entry.get('title', "unnamed entry")), level=log.DEBUG)
                                 

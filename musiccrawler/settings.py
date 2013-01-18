@@ -17,7 +17,7 @@ HTTPCACHE_EXPIRATION_SECS = 43200
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'musiccrawler (+http://www.yourdomain.com)'
 
-LOG_LEVEL = 'WARNING'
+LOG_LEVEL = 'INFO'
 
 MEMUSAGE_ENABLED = False
 MEMUSAGE_NOTIFY_MAIL = ['thimo.brinkmann@googlemail.com']

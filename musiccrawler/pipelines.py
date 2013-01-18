@@ -12,6 +12,7 @@ from datetime import datetime
 from musiccrawler.exporters import SOAPWSExporter
 from musiccrawler.exporters import RESTWSExporter
 from musiccrawler.exporters import MongoDBExporter
+from scrapy import log
 import re
 import json
 import traceback
@@ -36,15 +37,19 @@ class CheckMusicDownloadLinkPipeline(object):
     def process_item(self, item, spider):
         try:
             if re.match(self.urlregex,item['url']):
-                self.mdlb.init([item['url']],item['source'])
-                jsonitem = json.loads(self.mdlb.buildMusicDownloadLinks())[0]
-                jsonitem['password'] = item.get('password',"")
-                jsonitem['metainfo'] = item.get('metainfo',"")
-                jsonitem['date'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                
+                self.mdlb.init(item['source'])
+                log.msg(("Sending URL to Linkbuilder" + item['url']),level=log.DEBUG)
+                jsonresult = self.mdlb.buildMusicDownloadLink(item['url'])
+                log.msg(("Linkbuilder returned jsonstring:" + jsonresult),level=log.DEBUG)
+                if not jsonresult is None:
+                    jsonitem = json.loads(jsonresult)
+                    jsonitem['password'] = item.get('password',"")
+                    jsonitem['metainfo'] = item.get('metainfo',"")
+                    jsonitem['date'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 if jsonitem is None:
-                    raise DropItem("No item returned. Linbuilder may be corrupt.")
+                    raise DropItem("No item returned. Linkbuilder may be corrupt.")
                 else:
+                    log.msg(("Linkbuilder returned item:" + str(jsonitem)),level=log.DEBUG)
                     return jsonitem
             else:
                 raise DropItem("Link-URL is invalid:", item['url'], ", Item will be dropped.")
@@ -57,8 +62,10 @@ class DuplicateURLsPipeline(object):
 
     def process_item(self, item, spider):
         if item['url'] in self.urls_seen:
+            log.msg(("Duplicate Item:" + str(item)),level=log.DEBUG)
             raise DropItem("Duplicate Link-URL found: %s" % item['url'])
         else:
+            log.msg(("new Item:" + str(item)),level=log.DEBUG)
             self.urls_seen.add(item['url'])
             return item
         

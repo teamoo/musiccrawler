@@ -1,6 +1,7 @@
 from scrapy.contrib.exporter import BaseItemExporter
 from SOAPpy import WSDL
 from siesta import API
+from scrapy import log
 import pymongo
 
 import musiccrawler.settings
@@ -12,6 +13,7 @@ class SOAPWSExporter(BaseItemExporter):
         self.server = WSDL.Proxy(musiccrawler.settings.WSDL_FILE)
 
     def export_item(self, item):
+        log.msg(("Sending item to SOAPWS:" + str(item)),level=log.DEBUG)
         self.server.addLink(item['url'],item['name'],item['size'],item['status'],item['source'],item['hoster'],item['password'],item['metainfo'])
         
     def start_exporting(self):
@@ -32,13 +34,14 @@ class MongoDBExporter(BaseItemExporter):
 
     def export_item(self, item):
         if self.__get_uniq_key() is None:
+            log.msg(("Sending item to MongoDB:" + str(item)),level=log.DEBUG)
             self.collection.insert(dict(item))
         else:
+            log.msg(("Sending item to MongoDB:" + str(item)),level=log.DEBUG)
             self.collection.update(
                             {self.__get_uniq_key(): item[self.__get_uniq_key()]},
                             dict(item),
-                            upsert=True)  
-        return item
+                            upsert=True)
         
     def start_exporting(self):
         BaseItemExporter.start_exporting(self)
