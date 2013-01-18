@@ -8,6 +8,7 @@ from py4j.protocol import Py4JError
 from py4j.java_gateway import logging
 from scrapy.exceptions import DropItem
 from scrapy import signals
+from datetime import datetime
 from musiccrawler.exporters import SOAPWSExporter
 from musiccrawler.exporters import RESTWSExporter
 from musiccrawler.exporters import MongoDBExporter
@@ -39,7 +40,12 @@ class CheckMusicDownloadLinkPipeline(object):
                 jsonitem = json.loads(self.mdlb.buildMusicDownloadLinks())[0]
                 jsonitem['password'] = item.get('password',"")
                 jsonitem['metainfo'] = item.get('metainfo',"")
-                return jsonitem
+                jsonitem['date'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                
+                if jsonitem is None:
+                    raise DropItem("No item returned. Linbuilder may be corrupt.")
+                else:
+                    return jsonitem
             else:
                 raise DropItem("Link-URL is invalid:", item['url'], ", Item will be dropped.")
         except Py4JError:
