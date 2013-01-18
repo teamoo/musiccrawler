@@ -10,8 +10,8 @@ from scrapy import signals
 from musiccrawler.exporters import SOAPWSExporter
 from musiccrawler.exporters import RESTWSExporter
 from musiccrawler.exporters import MongoDBExporter
-import json
 import re
+import json
 import traceback
 
 class CheckMusicDownloadLinkPipeline(object):
@@ -25,14 +25,17 @@ class CheckMusicDownloadLinkPipeline(object):
     
     def __init__(self):
         gateway = JavaGateway(auto_convert=True)
+        gateway.jvm.py4j.GatewayServer.turnLoggingOff()
         self.mdlb = gateway.entry_point.getMusicDownloadLinkBuilder()
     
     def process_item(self, item, spider):
         try:
             if re.match(self.urlregex,item['url']):
                 self.mdlb.init([item['url']],item['source'])
-                jsonitem = json.loads(self.mdlb.buildMusicDownloadLinks())
-                return jsonitem[0]
+                jsonitem = json.loads(self.mdlb.buildMusicDownloadLinks())[0]
+                jsonitem['password'] = item.get('password')
+                jsonitem['metainfo'] = item.get('metainfo')
+                return jsonitem
             else:
                 raise DropItem("Link-URL is invalid:", item['url'], ", Item will be dropped.")
         except Py4JError:
@@ -43,16 +46,16 @@ class DuplicateURLsPipeline(object):
         self.urls_seen = set()
 
     def process_item(self, item, spider):
-        if item['url'] in self.ids_seen:
+        if item['url'] in self.urls_seen:
             raise DropItem("Duplicate Link-URL found: %s" % item['url'])
         else:
-            self.urls_seen.add(item['urls'])
+            self.urls_seen.add(item['url'])
             return item
         
 class SOAPWSExportPipeline(object):
     def __init__(self):
-        self.exporter = SOAPWSExporter(export_empty_fields=True);
-
+        self.exporter = SOAPWSExporter();
+        
     @classmethod
     def from_crawler(cls, crawler):
         pipeline = cls()
@@ -72,7 +75,7 @@ class SOAPWSExportPipeline(object):
     
 class RESTExportPipeline(object):
     def __init__(self):
-        self.exporter = RESTWSExporter(export_empty_fields=True);
+        self.exporter = RESTWSExporter();
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -93,7 +96,7 @@ class RESTExportPipeline(object):
     
 class MongoDBExportPipeline(object):
     def __init__(self):
-        self.exporter = MongoDBExporter(export_empty_fields=True);
+        self.exporter = MongoDBExporter();
 
     @classmethod
     def from_crawler(cls, crawler):

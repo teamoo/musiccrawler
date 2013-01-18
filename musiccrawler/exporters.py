@@ -6,23 +6,22 @@ import pymongo
 import musiccrawler.settings
 
 class SOAPWSExporter(BaseItemExporter):
-    export_empty_fields = True
+    export_empty_fields = False
     
     def __init__(self):
         self.server = WSDL.Proxy(musiccrawler.settings.WSDL_FILE)
+        self.server.soapproxy.config.dumpSOAPOut = 1     
+        self.server.soapproxy.config.dumpSOAPIn = 1
 
     def export_item(self, item):
-        self.server.addLink(item)
+        self.server.addLink(item['url'],item['name'],item['size'],item['status'],item['source'],item['hoster'],item['password'],item['metainfo'])
         
     def start_exporting(self):
         BaseItemExporter.start_exporting(self)
         
     def finish_exporting(self):
         BaseItemExporter.finish_exporting(self)
-        
-    def serialize_field(self, field, name, value):
-        return BaseItemExporter.serialize_field(self, field, name, value)
-    
+            
 class MongoDBExporter(BaseItemExporter):
     export_empty_fields = True
 
@@ -48,9 +47,6 @@ class MongoDBExporter(BaseItemExporter):
         
     def finish_exporting(self):
         BaseItemExporter.finish_exporting(self)
-        
-    def serialize_field(self, field, name, value):
-        return BaseItemExporter.serialize_field(self, field, name, value)
 
     def __get_uniq_key(self):
         if not musiccrawler.settings.MONGODB_UNIQ_KEY or musiccrawler.settings.MONGODB_UNIQ_KEY == "":
@@ -59,7 +55,7 @@ class MongoDBExporter(BaseItemExporter):
 
 class RESTWSExporter(BaseItemExporter):
     export_empty_fields = True
-    
+            
     def __init__(self):
         self.api = API(musiccrawler.settings.REST_API_URL)
 
@@ -71,6 +67,3 @@ class RESTWSExporter(BaseItemExporter):
         
     def finish_exporting(self):
         BaseItemExporter.finish_exporting(self)
-        
-    def serialize_field(self, field, name, value):
-        return BaseItemExporter.serialize_field(self, field, name, value)    

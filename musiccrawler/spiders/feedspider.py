@@ -7,130 +7,66 @@
 # -Sid
 
 from scrapy.spider import BaseSpider
-from scrapy.selector import HtmlXPathSelector
-from scrapy.selector import XmlXPathSelector
-from scrapy.http import Request
-
-from musiccrawler.items import RssFeedItem
-from musiccrawler.items import RssEntryItem
+from scrapy import log
 
 import feedparser
 import re
-import urlparse
+import json
+import math
+import musiccrawler.settings
+from musiccrawler.items import DownloadLinkItem
 
-class FeedSpider(BaseSpider):
+class FeedSpider(BaseSpider):        
     name = "feedspider"
-    allowed_domain = ["tanzdurchdenkiez.de"]
-    start_urls = [
-                  "http://www.tanzdurchdenkiez.de/feed/"
-                  ]
-    _date_pattern = re.compile( \
-                               r'(\d{,2})/(\d{,2})/(\d{4}) (\d{,2}):(\d{2}):(\d{2})');
-    _http_pattern = re.compile(r'^http:\/\/');
-    _gathered_fields = ('published_parsed' ,'title' ,  'link' ,'summary');
-    
-    
-    def parse(self, response):
-        #recieve Parsed urls here...
-        hxs = HtmlXPathSelector(response)
-        base_url = response.url;
-        res = urlparse.urlparse(base_url);
-        self.allowed_domain = [res.netloc];
-        
-        
-        print ('**********BASE URL********',base_url);
-        links = hxs.select('//a/@href').extract();
-        self.num_links = len(links);
-        self.num_links_proc = 0;
-        print 'Number of links TBP %s'%(self.num_links);
-        for url in links:
-            #TODO: Inform mongo about progress
-            if(self._http_pattern.match(url)):
-                # this is an absolute URL
-                if url.find(self.allowed_domain[0])!=-1 :
-                    try:
-                        #callback should be in a separate function. Otherwise all links in this will be crawled too as this function is recursive.
-                        yield Request(url, callback=self.first_level_links);
-                    except:
-                        pass;
-                else:
-                    # this was an absolute URL but the domain was not the same, so dont crawl
-                    pass
-    
-            else:
-                #relative URL we should try to append the domain and fetch the page
-                yield Request(urlparse.urljoin(base_url, url), callback=self.first_level_links);
-    # This page will process the first level links
-    def first_level_links(self, response):
-        print('****First Level links:',response.url);
-        r = self.detect_feed(response);
-        if r:
-            yield r;
-        pass
-    # detect an RSS Feed and return a RssFeedItem Object
-    def detect_feed(self, response):
-        """Just detects the feed in the links and returns an Item"""
-        xxs = XmlXPathSelector(response);
-        '''Need to tweak the feedparser lib to just use the headers from response instead of
-            d/l the feed page again, rather than d/l it again
-            '''
-        
-        if any(xxs.select("/%s" % feed_type) for feed_type in ['rss', 'feed', 'xml', 'rdf']):
-            try:
-                rssFeed = feedparser.parse(response.url);
-                return  self.extract_feed(rssFeed)
-            except:
-                raise Exception('Exception while parsing/extracting the feed')
+    allowed_domain = ['feedburner.com']
+    start_urls = ['http://feeds.feedburner.com/HouseRavers']
+    def __init__(self):
+        log.msg("Initalizing Spider", level=log.INFO)
+        hosts = json.load(open(musiccrawler.settings.HOSTS_FILE_PATH))
+        regex_group_count = 50
+        self.regexes = []
 
-        return None
-
-    def extract_feed(self, parsed_feed):
-        """
-            Takes a feed from the feedparser and returns the constructed items
-            """
+        for i in range(int(math.ceil(len(hosts) / regex_group_count))):
+            
+            hosterregex =''
+    
+            for hoster in hosts[(i+1)*regex_group_count-regex_group_count:(i+1)*regex_group_count]:
+                hosterpattern = str(hoster['pattern']).rstrip('\r\n').replace("/","\/").replace(":","\:").replace("\d+{","\d{").replace("++","+").replace("\r\n","").replace("|[\p{L}\w-%]+\/[\p{L}\w-%]+","") + '|'
+                hosterregex += hosterpattern.encode('utf-8')
+            
+            self.regexes.append(re.compile("'" + hosterregex[:-1] + "'", re.IGNORECASE))
         
-        if hasattr(parsed_feed.feed, 'link') and (hasattr(parsed_feed.feed,'title')
-                                                  or  hasattr(parsed_feed.feed,'description')) and parsed_feed.entries:
-            r = RssFeedItem();
-            if 'title' in parsed_feed.feed:
-                r['title'] = parsed_feed.feed.title;
-            if 'subtitle' in parsed_feed.feed:
-                r['summary'] = parsed_feed.feed.subtitle
-            if 'link' in parsed_feed.feed:
-                r['link'] = parsed_feed.feed.link
-            
-            # entries gathered as list(s) of key value pairs. Each list is an entry item
-            entry_lists= [[
-                           {i: entry[i]}  for i in entry if i in self._gathered_fields
-                           ]for entry in parsed_feed.entries if hasattr(entry,'title') and  hasattr(entry,'link') and hasattr(entry,'summary')
-                          ]
-            
-            for entry_list in entry_lists:
-                entry_item = RssEntryItem();
+        log.msg("Spider initalized.", level=log.INFO)
                 
-                for entry_dict in entry_list:
-                    if r.has_key('entries') == False:
-                        r['entries'] = list();
-                    
-                    if 'published_parsed' in entry_dict:
-                        entry_item.update({ 'published':self.dateHandler(self,entry_dict('published_parsed'))});
-                    else:
-                        entry_item.update(entry_dict);
-                    r['entries'].append(entry_item);
-            if r['entries']:
-                return r;
-        # if there are no entries return null
-        return None;
-    def dateHandler(self, dateString):
-        """parse a UTC date in MM/DD/YYYY HH:MM:SS format"""
-        month, day, year, hour, minute, second = \
-            self._date_pattern.search(dateString).groups()
-        return (int(year), int(month), int(day), \
-                int(hour), int(minute), int(second), 0, 0, 0);
-
-
-class MalformedURLException(Exception):
-    def __init__(self, value):
-        self.value = value
-    def __str__(self):
-        return repr(self.value)
+    def parse(self,response):
+            rssFeed = feedparser.parse(response.url)
+            
+            if rssFeed.bozo == 1:
+                print "Feed kann nicht verarbeitet werden:", response.url
+            else:
+                if 'title' in rssFeed:
+                    print "Verarbeite Feed:", rssFeed
+                for entry in rssFeed.entries:
+                    for regexpr in self.regexes:
+                        if 'summary' in entry:
+                            iterator = regexpr.finditer(str(entry.summary))
+                            for match in iterator:
+                                linkitem = DownloadLinkItem()
+                                linkitem['url'] = match.group().split('" ')[0]
+                                linkitem['source'] = str(self.start_urls[0])
+                                return linkitem
+                        if 'content' in entry:
+                            iterator = regexpr.finditer(str(entry.content))
+                            for match in iterator:
+                                linkitem = DownloadLinkItem()
+                                linkitem['url'] = match.group().split('" ')[0]
+                                linkitem['source'] = str(self.start_urls[0])
+                                return linkitem
+                        if 'links' in entry:
+                            iterator = regexpr.finditer(str(entry.links))
+                            for match in iterator:
+                                linkitem = DownloadLinkItem()
+                                linkitem['url'] = match.group().split('" ')[0]
+                                linkitem['source'] = str(self.start_urls[0])
+                                return linkitem
+                                

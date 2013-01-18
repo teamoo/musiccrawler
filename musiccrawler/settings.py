@@ -17,14 +17,16 @@ HTTPCACHE_EXPIRATION_SECS = 43200
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'musiccrawler (+http://www.yourdomain.com)'
 
-MEMUSAGE_ENABLED = True
+LOG_LEVEL = 'INFO'
+
+MEMUSAGE_ENABLED = False
 MEMUSAGE_NOTIFY_MAIL = ['thimo.brinkmann@googlemail.com']
 MEMUSAGE_WARNING_MB = 800
 
 ITEM_PIPELINES = [
     'musiccrawler.pipelines.DuplicateURLsPipeline',
-    #'musiccrawler.pipelines.CheckMusicDownloadLinkPipeline',
-    #'musiccrawler.pipelines.SOAPWSExportPipeline',
+    'musiccrawler.pipelines.CheckMusicDownloadLinkPipeline',
+    'musiccrawler.pipelines.SOAPWSExportPipeline',
     #'musiccrawler.pipelines.RESTWSExportPipeline',
     #'musiccrawler.pipelines.MongoDBExportPipeline'
 ]
@@ -46,4 +48,7 @@ MONGODB_SERVER = 'localhost'
 MONGODB_PORT = 27017
 MONGODB_DB = 'musiccrawler'
 MONGODB_COLLECTION = 'links'
-MONGODB_UNIQ_KEY = 'id'
+MONGODB_UNIQ_KEY = 'url'
+
+HOSTS_FILE_PATH = 'hosts.json'
+FEEDS_FILE_PATH = ''
