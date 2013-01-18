@@ -10,8 +10,6 @@ class SOAPWSExporter(BaseItemExporter):
     
     def __init__(self):
         self.server = WSDL.Proxy(musiccrawler.settings.WSDL_FILE)
-        self.server.soapproxy.config.dumpSOAPOut = 1     
-        self.server.soapproxy.config.dumpSOAPIn = 1
 
     def export_item(self, item):
         self.server.addLink(item['url'],item['name'],item['size'],item['status'],item['source'],item['hoster'],item['password'],item['metainfo'])
