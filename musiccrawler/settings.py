@@ -17,14 +17,22 @@ HTTPCACHE_EXPIRATION_SECS = 43200
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'musiccrawler (+http://www.yourdomain.com)'
 
-MEMUSAGE_ENABLED = False
+MEMUSAGE_ENABLED = True
 MEMUSAGE_NOTIFY_MAIL = ['thimo.brinkmann@googlemail.com']
 MEMUSAGE_WARNING_MB = 800
 
 ITEM_PIPELINES = [
     'musiccrawler.pipelines.DuplicateURLsPipeline',
     #'musiccrawler.pipelines.CheckMusicDownloadLinkPipeline',
-    #'musiccrawler.pipelines.SOAPWSExportPipeline'
+    #'musiccrawler.pipelines.SOAPWSExportPipeline',
+    #'musiccrawler.pipelines.RESTWSExportPipeline',
+    #'musiccrawler.pipelines.MongoDBExportPipeline'
+]
+
+FEED_EXPORTERS = [
+    'musiccrawler.exporters.SOAPWSExporter',
+    'musiccrawler.exporters.RESTWSExporter',
+    'musiccrawler.exporters.MongoDBExporter'
 ]
 
 SPIDER_CONTRACTS = [
@@ -32,3 +40,10 @@ SPIDER_CONTRACTS = [
 ]
 
 WSDL_FILE = 'http://musiclink.webcomsult.de/v2/index.php?wsdl'
+REST_API_URL = 'http://musiclink.webcomsult.de/v2/index.php?wsdl'
+
+MONGODB_SERVER = 'localhost'
+MONGODB_PORT = 27017
+MONGODB_DB = 'musiccrawler'
+MONGODB_COLLECTION = 'links'
+MONGODB_UNIQ_KEY = 'id'
