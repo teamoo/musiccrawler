@@ -17,7 +17,7 @@ HTTPCACHE_EXPIRATION_SECS = 43200
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'musiccrawler (+http://www.yourdomain.com)'
 
-LOG_LEVEL = 'INFO'
+LOG_LEVEL = 'WARNING'
 
 MEMUSAGE_ENABLED = False
 MEMUSAGE_NOTIFY_MAIL = ['thimo.brinkmann@googlemail.com']
@@ -28,7 +28,7 @@ ITEM_PIPELINES = [
     'musiccrawler.pipelines.CheckMusicDownloadLinkPipeline',
     'musiccrawler.pipelines.SOAPWSExportPipeline',
     #'musiccrawler.pipelines.RESTWSExportPipeline',
-    #'musiccrawler.pipelines.MongoDBExportPipeline'
+    'musiccrawler.pipelines.MongoDBExportPipeline'
 ]
 
 FEED_EXPORTERS = [

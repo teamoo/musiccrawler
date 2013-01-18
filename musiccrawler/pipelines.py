@@ -5,6 +5,7 @@
 
 from py4j.java_gateway import JavaGateway
 from py4j.protocol import Py4JError
+from py4j.java_gateway import logging
 from scrapy.exceptions import DropItem
 from scrapy import signals
 from musiccrawler.exporters import SOAPWSExporter
@@ -26,6 +27,9 @@ class CheckMusicDownloadLinkPipeline(object):
     def __init__(self):
         gateway = JavaGateway(auto_convert=True)
         gateway.jvm.py4j.GatewayServer.turnLoggingOff()
+        logger = logging.getLogger("py4j")
+        logger.setLevel(logging.INFO)
+        logger.addHandler(logging.StreamHandler())
         self.mdlb = gateway.entry_point.getMusicDownloadLinkBuilder()
     
     def process_item(self, item, spider):
@@ -33,8 +37,8 @@ class CheckMusicDownloadLinkPipeline(object):
             if re.match(self.urlregex,item['url']):
                 self.mdlb.init([item['url']],item['source'])
                 jsonitem = json.loads(self.mdlb.buildMusicDownloadLinks())[0]
-                jsonitem['password'] = item.get('password')
-                jsonitem['metainfo'] = item.get('metainfo')
+                jsonitem['password'] = item.get('password',"")
+                jsonitem['metainfo'] = item.get('metainfo',"")
                 return jsonitem
             else:
                 raise DropItem("Link-URL is invalid:", item['url'], ", Item will be dropped.")

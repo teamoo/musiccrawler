@@ -21,6 +21,7 @@ class FeedSpider(BaseSpider):
     allowed_domain = ['feedburner.com']
     start_urls = ['http://feeds.feedburner.com/HouseRavers']
     def __init__(self):
+        
         log.msg("Initalizing Spider", level=log.INFO)
         hosts = json.load(open(musiccrawler.settings.HOSTS_FILE_PATH))
         regex_group_count = 50
@@ -42,10 +43,10 @@ class FeedSpider(BaseSpider):
             rssFeed = feedparser.parse(response.url)
             
             if rssFeed.bozo == 1:
-                print "Feed kann nicht verarbeitet werden:", response.url
+                log.msg(str("Feed kann nicht verarbeitet werden:", response.url), level=log.INFO)
             else:
                 if 'title' in rssFeed:
-                    print "Verarbeite Feed:", rssFeed
+                    log.msg(str("Verarbeite Feed:", rssFeed), level=log.INFO)
                 for entry in rssFeed.entries:
                     for regexpr in self.regexes:
                         if 'summary' in entry:
@@ -54,19 +55,19 @@ class FeedSpider(BaseSpider):
                                 linkitem = DownloadLinkItem()
                                 linkitem['url'] = match.group().split('" ')[0]
                                 linkitem['source'] = str(self.start_urls[0])
-                                return linkitem
+                                yield linkitem
                         if 'content' in entry:
                             iterator = regexpr.finditer(str(entry.content))
                             for match in iterator:
                                 linkitem = DownloadLinkItem()
                                 linkitem['url'] = match.group().split('" ')[0]
                                 linkitem['source'] = str(self.start_urls[0])
-                                return linkitem
+                                yield linkitem
                         if 'links' in entry:
                             iterator = regexpr.finditer(str(entry.links))
                             for match in iterator:
                                 linkitem = DownloadLinkItem()
                                 linkitem['url'] = match.group().split('" ')[0]
                                 linkitem['source'] = str(self.start_urls[0])
-                                return linkitem
+                                yield linkitem
                                 
