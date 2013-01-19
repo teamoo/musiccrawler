@@ -35,7 +35,7 @@ class FeedSpider(BaseSpider):
             hosterregex =''
     
             for hoster in hosts[(i+1)*regex_group_count-regex_group_count:(i+1)*regex_group_count]:
-                hosterpattern = str(hoster['pattern']).rstrip('\r\n').replace("/","\/").replace(":","\:").replace("\d+{","\d{").replace("++","+").replace("\r\n","").replace("|[\p{L}\w-%]+\/[\p{L}\w-%]+","") + '|'
+                hosterpattern = unicode(hoster['pattern']).rstrip('\r\n').replace("/","\/").replace(":","\:").replace("\d+{","\d{").replace("++","+").replace("\r\n","").replace("|[\p{L}\w-%]+\/[\p{L}\w-%]+","") + '|'
                 hosterregex += hosterpattern.encode('utf-8')
             
             self.regexes.append(re.compile("'" + hosterregex[:-1] + "'", re.IGNORECASE))

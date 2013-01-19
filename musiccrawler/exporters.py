@@ -28,16 +28,18 @@ class MongoDBExporter(BaseItemExporter):
     def __init__(self):
         connection = pymongo.Connection(musiccrawler.settings.MONGODB_SERVER, musiccrawler.settings.MONGODB_PORT)
         self.db = connection[musiccrawler.settings.MONGODB_DB]
+        if not (musiccrawler.settings.MONGODB_USER or musiccrawler.settings.MONGODB_USER == "") and not (musiccrawler.settings.MONGODB_PASSWORD or musiccrawler.settings.MONGODB_PASSWORD == ""):
+            self.db.authenticate(musiccrawler.settings.MONGODB_USER,musiccrawler.settings.MONGODB_PASSWORD)
         self.collection = self.db[musiccrawler.settings.MONGODB_COLLECTION]
         if self.__get_uniq_key() is not None:
             self.collection.create_index(self.__get_uniq_key(), unique=True)
 
     def export_item(self, item):
         if self.__get_uniq_key() is None:
-            log.msg(("Sending item to MongoDB:" + str(item)),level=log.DEBUG)
+            log.msg(("Sending item to MongoDB:" + str(item) + " " + str(dict(item))),level=log.DEBUG)
             self.collection.insert(dict(item))
         else:
-            log.msg(("Sending item to MongoDB:" + str(item)),level=log.DEBUG)
+            log.msg(("Sending item to MongoDB:" + str(item) + " " + str(dict(item))),level=log.DEBUG)
             self.collection.update(
                             {self.__get_uniq_key(): item[self.__get_uniq_key()]},
                             dict(item),

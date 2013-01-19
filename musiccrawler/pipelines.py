@@ -38,9 +38,9 @@ class CheckMusicDownloadLinkPipeline(object):
         try:
             if re.match(self.urlregex,item['url']):
                 self.mdlb.init(item['source'])
-                log.msg(("Sending URL to Linkbuilder" + item['url']),level=log.DEBUG)
+                log.msg(("Sending URL to Linkbuilder: " + item['url']),level=log.DEBUG)
                 jsonresult = self.mdlb.buildMusicDownloadLink(item['url'])
-                log.msg(("Linkbuilder returned jsonstring:" + jsonresult),level=log.DEBUG)
+                log.msg(("Linkbuilder returned jsonstring: " + jsonresult),level=log.DEBUG)
                 if not jsonresult is None:
                     jsonitem = json.loads(jsonresult)
                     jsonitem['password'] = item.get('password',"")
@@ -52,7 +52,7 @@ class CheckMusicDownloadLinkPipeline(object):
                     log.msg(("Linkbuilder returned item:" + str(jsonitem)),level=log.DEBUG)
                     return jsonitem
             else:
-                raise DropItem("Link-URL is invalid:", item['url'], ", Item will be dropped.")
+                raise DropItem("Link-URL is invalid: ", item['url'], ", Item will be dropped.")
         except Py4JError:
             traceback.print_exc()
             

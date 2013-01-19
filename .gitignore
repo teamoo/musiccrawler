@@ -15,3 +15,7 @@ dist
 *.egg-info
 .#.*
 .pydevproject
+
+*.pyc
+
+*.pyc

@@ -17,7 +17,7 @@ HTTPCACHE_EXPIRATION_SECS = 43200
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'musiccrawler (+http://www.yourdomain.com)'
 
-LOG_LEVEL = 'INFO'
+LOG_LEVEL = 'DEBUG'
 
 MEMUSAGE_ENABLED = False
 MEMUSAGE_NOTIFY_MAIL = ['thimo.brinkmann@googlemail.com']
@@ -44,11 +44,15 @@ SPIDER_CONTRACTS = [
 WSDL_FILE = 'http://musiclink.webcomsult.de/v2/index.php?wsdl'
 REST_API_URL = 'http://musiclink.webcomsult.de/v2/index.php?wsdl'
 
-MONGODB_SERVER = 'localhost'
-MONGODB_PORT = 27017
+#MONGODB_SERVER = 'localhost'
+#MONGODB_PORT = 27017
+MONGODB_SERVER = 'linus.mongohq.com'
+MONGODB_PORT = 10050
 MONGODB_DB = 'musiccrawler'
 MONGODB_COLLECTION = 'links'
 MONGODB_UNIQ_KEY = 'url'
+MONGODB_USER = 'dbuser'
+MONGODB_PASSWORD = 'geheim'
 
 HOSTS_FILE_PATH = 'hosts.json'
 FEEDS_FILE_PATH = ''
