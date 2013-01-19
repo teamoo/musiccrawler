@@ -42,7 +42,7 @@ SPIDER_CONTRACTS = [
 ]
 
 WSDL_FILE = 'http://musiclink.webcomsult.de/v2/index.php?wsdl'
-REST_API_URL = 'http://musiclink.webcomsult.de/v2/index.php?wsdl'
+REST_API_URL = 'http://musiclink.webcomsult.de/v2/rest.php'
 
 #MONGODB_SERVER = 'localhost'
 #MONGODB_PORT = 27017
