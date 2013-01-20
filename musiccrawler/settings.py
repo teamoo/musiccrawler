@@ -17,7 +17,7 @@ HTTPCACHE_EXPIRATION_SECS = 43200
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'musiccrawler (+http://www.yourdomain.com)'
 
-LOG_LEVEL = 'DEBUG'
+LOG_LEVEL = 'INFO'
 
 MEMUSAGE_ENABLED = False
 MEMUSAGE_NOTIFY_MAIL = ['thimo.brinkmann@googlemail.com']
@@ -55,4 +55,4 @@ MONGODB_USER = 'dbuser'
 MONGODB_PASSWORD = 'geheim'
 
 HOSTS_FILE_PATH = 'hosts.json'
-FEEDS_FILE_PATH = ''
+FEEDS_FILE_PATH = 'feeds.json'

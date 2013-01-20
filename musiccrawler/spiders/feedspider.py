@@ -21,15 +21,22 @@ from musiccrawler.items import DownloadLinkItem
 
 class FeedSpider(BaseSpider):        
     name = "feedspider"
-    allowed_domain = ['feedburner.com']
-    start_urls = ['http://feeds.feedburner.com/HouseRavers']
+    
     def __init__(self):
         
         log.msg("Initalizing Spider", level=log.INFO)
         hosts = json.load(open(musiccrawler.settings.HOSTS_FILE_PATH))
+        feeds = json.load(open(musiccrawler.settings.FEEDS_FILE_PATH))
         regex_group_count = 50
         self.regexes = []
-
+        
+        feedurls = []
+        
+        for feed in feeds:
+            feedurls.append(feed['feedurl'])
+           
+        self.start_urls = [feedurls[3]]
+            
         for i in range(int(math.ceil(len(hosts) / regex_group_count))):
             
             hosterregex =''
@@ -48,32 +55,34 @@ class FeedSpider(BaseSpider):
             if rssFeed.bozo == 1:
                 log.msg(("Feed kann nicht verarbeitet werden:" + str(response.url)), level=log.INFO)
             else:
-                log.msg(("Verarbeite Feed:" + rssFeed.get('title', response.url)), level=log.INFO)
                 for entry in rssFeed.entries:
-                    if (datetime.now() - monthdelta.MonthDelta(6)) < datetime.fromtimestamp(mktime(rssFeed.entries[0].published_parsed)):
-                        log.msg(("Verarbeite Eintrag:" + entry.get('title', "unnamed entry")), level=log.DEBUG)
-                        for regexpr in self.regexes:
-                            if 'summary' in entry:
-                                iterator = regexpr.finditer(str(entry.summary))
-                                for match in iterator:
-                                    linkitem = DownloadLinkItem()
-                                    linkitem['url'] = match.group().split('" ')[0]
-                                    linkitem['source'] = str(self.start_urls[0])
-                                    yield linkitem
-                            if 'content' in entry:
-                                iterator = regexpr.finditer(str(entry.content))
-                                for match in iterator:
-                                    linkitem = DownloadLinkItem()
-                                    linkitem['url'] = match.group().split('" ')[0]
-                                    linkitem['source'] = str(self.start_urls[0])
-                                    yield linkitem
-                            if 'links' in entry:
-                                iterator = regexpr.finditer(str(entry.links))
-                                for match in iterator:
-                                    linkitem = DownloadLinkItem()
-                                    linkitem['url'] = match.group().split('" ')[0]
-                                    linkitem['source'] = str(self.start_urls[0])
-                                    yield linkitem
+                    if (datetime.now() - monthdelta.MonthDelta(1)) < datetime.fromtimestamp(mktime(rssFeed.get('updated_parsed',''))):
+                        log.msg(("Verarbeite Feed:" + rssFeed.get('title', response.url)), level=log.INFO)
+                        if (datetime.now() - monthdelta.MonthDelta(1)) < datetime.fromtimestamp(mktime(entry.get('published_parsed',''))):
+                            log.msg(("Verarbeite Eintrag:" + entry.get('title', "unnamed entry")), level=log.DEBUG)
+                            for regexpr in self.regexes:
+                                if 'summary' in entry:
+                                    iterator = regexpr.finditer(str(entry.summary))
+                                    for match in iterator:
+                                        linkitem = DownloadLinkItem()
+                                        linkitem['url'] = match.group().split('" ')[0]
+                                        linkitem['source'] = str(rssFeed.get('link','unknown source'))
+                                        yield linkitem
+                                if 'content' in entry:
+                                    iterator = regexpr.finditer(str(entry.content))
+                                    for match in iterator:
+                                        linkitem = DownloadLinkItem()
+                                        linkitem['url'] = match.group().split('" ')[0]
+                                        linkitem['source'] = str(rssFeed.get('link','unknown source'))
+                                        yield linkitem
+                                if 'links' in entry:
+                                    iterator = regexpr.finditer(str(entry.links))
+                                    for match in iterator:
+                                        linkitem = DownloadLinkItem()
+                                        linkitem['url'] = match.group().split('" ')[0]
+                                        linkitem['source'] = str(rssFeed.get('link','unknown source'))
+                                        yield linkitem
+                        else:
+                            log.msg(("Feed-Entry is older than 1 month:" + entry.get('title', "unnamed entry")), level=log.DEBUG)  
                     else:
-                        log.msg(("Feed-Entry is older than 6 month:" + entry.get('title', "unnamed entry")), level=log.DEBUG)
-                                
+                        log.msg(("Feed has not been updated within 6 months:" + entry.get('title', "unnamed entry")), level=log.INFO)
