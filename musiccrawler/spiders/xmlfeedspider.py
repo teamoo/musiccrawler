@@ -6,31 +6,58 @@
 #
 # -Sid
 
-from scrapy.contrib.spiders import XMLFeedSpider, CrawlSpider, Rule
+from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
 from scrapy.selector import XmlXPathSelector
 from scrapy import log
 import json
+import re
+import math
 import musiccrawler.settings
-from scrapy.contrib.linkextractors.sgml import BaseSgmlLinkExtractor
+from musiccrawler.linkextractors import LxmlParserTreeLinkExtractor
 
-class XMLFeedSpider(CrawlSpider):
+class MyCustomXMLFeedSpider(CrawlSpider):
     name = "xmlfeedspider"
 
-    allowed_domains = ['electropeople.org']
-    start_urls = ["http://electropeople.org/rss.xml"]
+    #allowed_domains = ['electropeople.org']
+    start_urls = ["http://www.bestclubsound.com/feed"]
+
+    hosts = json.load(open(musiccrawler.settings.HOSTS_FILE_PATH))
+    regex_group_count = 50
+    regexes = []
+        
+    for i in range(int(math.ceil(len(hosts) / regex_group_count))):
+            
+        hosterregex = ''
+    
+        for hoster in hosts[(i + 1) * regex_group_count - regex_group_count:(i + 1) * regex_group_count]:
+            hosterpattern = unicode(hoster['pattern']).rstrip('\r\n').replace("/", "\/").replace(":", "\:").replace("\d+{", "\d{").replace("++", "+").replace("\r\n", "").replace("|[\p{L}\w-%]+\/[\p{L}\w-%]+", "") + '|'
+            hosterregex += hosterpattern.encode('utf-8')
+            
+        regexes.append(re.compile("'" + hosterregex[:-1] + "'", re.IGNORECASE))
+
 
     rules = (
         # Extract links matching 'category.php' (but not matching 'subsection.php')
         # and follow links from them (since no callback means follow=True by default).
-      Rule(SgmlLinkExtractor(attrs=('text()', 'value', 'version', None, ''), tags=("channel", "description", "item", "link")), callback='parse_item'),)
+            Rule(
+                    SgmlLinkExtractor(allow=regexes),callback='parse_item'
+                 ), 
+            Rule(
+                    LxmlParserTreeLinkExtractor(tag="link"),follow=True
+                 ),
+            Rule(
+                    SgmlLinkExtractor(allow=(),allow_domains=("bestclubsound.com")),follow=True
+                 ),
 
-
+             )
+    
     def parse_item(self, response):
+        print "JO"
         self.log('Hi, this is an item page! %s' % response)
 
 
-# class XMLFeedSpider(CrawlSpider):        
+#class XMLFeedSpider(CrawlSpider):        
 #    name = "xmlfeedspider"
 #
 #    allowed_domains = ['electropeople.org']
@@ -62,5 +89,3 @@ class XMLFeedSpider(CrawlSpider):
 #        log.msg('Hi, this is a <%s> node!: %s' % (self.itertag, ''.join(node.extract())))
 #        print "DESC:",node.select("description/text()").extract()
 #        print "LINK:",node.select("link/text()").extract()
-
-

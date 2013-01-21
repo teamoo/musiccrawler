@@ -8,8 +8,8 @@
 
 BOT_NAME = 'musiccrawler'
 
-SPIDER_MODULES = ['musiccrawler.spiders.feedspider']
-NEWSPIDER_MODULE = 'musiccrawler.spiders.feedspider'
+SPIDER_MODULES = ['musiccrawler.spiders.xmlfeedspider']
+NEWSPIDER_MODULE = 'musiccrawler.spiders.xmlfeedspider'
 
 HTTPCACHE_ENABLED = True
 HTTPCACHE_EXPIRATION_SECS = 43200
@@ -17,7 +17,7 @@ HTTPCACHE_EXPIRATION_SECS = 43200
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 # USER_AGENT = 'musiccrawler (+http://www.yourdomain.com)'
 
-LOG_LEVEL = 'INFO'
+LOG_LEVEL = 'DEBUG'
 
 MEMUSAGE_ENABLED = False
 MEMUSAGE_NOTIFY_MAIL = ['thimo.brinkmann@googlemail.com']
@@ -25,10 +25,10 @@ MEMUSAGE_WARNING_MB = 800
 
 ITEM_PIPELINES = [
     'musiccrawler.pipelines.DuplicateURLsPipeline',
-    'musiccrawler.pipelines.CheckMusicDownloadLinkPipeline',
-    'musiccrawler.pipelines.SOAPWSExportPipeline',
-    # 'musiccrawler.pipelines.RESTWSExportPipeline',
-    'musiccrawler.pipelines.MongoDBExportPipeline'
+    #'musiccrawler.pipelines.CheckMusicDownloadLinkPipeline',
+    #'musiccrawler.pipelines.SOAPWSExportPipeline',
+    #'musiccrawler.pipelines.RESTWSExportPipeline',
+    #'musiccrawler.pipelines.MongoDBExportPipeline'
 ]
 
 FEED_EXPORTERS = [

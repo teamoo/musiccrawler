@@ -33,11 +33,11 @@
 },{
 "url" : "http://beatmyday.com" , 
 "feedurl" : "http://www.beatmyday.com/feed",
-"domain" : "www.beatmyday.com"
+"domain" : "beatmyday.com"
 },{
 "url" : "http://bestclubsound.com" , 
 "feedurl" : "http://www.bestclubsound.com/feed",
-"domain" : "www.bestclubsound.com"
+"domain" : "bestclubsound.com"
 },{
 "url" : "http://hungry4music.com" , 
 "feedurl" : "http://feeds.feedburner.com/Itfeelslikesundaytous",
@@ -53,11 +53,11 @@
 },{
 "url" : "http://progressivehouseworldwide.com" , 
 "feedurl" : "http://www.progressivehouseworldwide.com/feed",
-"domain" : "www.progressivehouseworldwide.com"
+"domain" : "progressivehouseworldwide.com"
 },{
 "url" : "http://tanzdurchdenkiez.de" , 
 "feedurl" : "http://www.tanzdurchdenkiez.de/feed",
-"domain" : "www.tanzdurchdenkiez.de"
+"domain" : "tanzdurchdenkiez.de"
 },{
 "url" : "http://deep-and-beat.com" , 
 "feedurl" : "http://feeds.feedburner.com/DeepAndBeat",
@@ -69,7 +69,7 @@
 },{
 "url" : "http://electrobuzz.org" , 
 "feedurl" : "http://www.electrobuzz.org/feed",
-"domain" : "www.electrobuzz.org"
+"domain" : "electrobuzz.org"
 },{
 "url" : "http://whatdjplays.com" , 
 "feedurl" : "http://whatdjplays.com/feed",
@@ -85,7 +85,7 @@
 },{
 "url" : "http://exclusive-music-dj.com" , 
 "feedurl" : "http://www.exclusive-music-dj.com/feed",
-"domain" : "www.exclusive-music-dj.com"
+"domain" : "exclusive-music-dj.com"
 },{
 "url" : "http://oradeaclubmusic.blogspot.de" , 
 "feedurl" : "http://oradeaclubmusic.blogspot.de/feeds/posts/default",
@@ -105,7 +105,7 @@
 },{
 "url" : "http://club-box-11.blogspot.de" , 
 "feedurl" : "http://www.club-box-11.blogspot.com/feeds/posts/default",
-"domain" : "www.club-box-11.blogspot.com"
+"domain" : "club-box-11.blogspot.com"
 },{
 "url" : "http://mypromosound.com" , 
 "feedurl" : "http://mypromosound.com/feed",
@@ -137,11 +137,11 @@
 },{
 "url" : "http://888music.com" , 
 "feedurl" : "http://www.888music.com/feed",
-"domain" : "www.888music.com"
+"domain" : "888music.com"
 },{
 "url" : "http://house4deejay.com" , 
 "feedurl" : "http://www.house4deejay.com/feed",
-"domain" : "www.house4deejay.com"
+"domain" : "house4deejay.com"
 },{
 "url" : "http://technoface.hu/new/" , 
 "feedurl" : "http://technoface.hu/new/feed",
@@ -157,7 +157,7 @@
 },{
 "url" : "http://community-music-dj.com" , 
 "feedurl" : "http://www.community-music-dj.com/feeds/posts/default",
-"domain" : "www.community-music-dj.com"
+"domain" : "community-music-dj.com"
 },{
 "url" : "http://grizzlis.lt" , 
 "feedurl" : "http://grizzlis.lt/feed",
@@ -165,11 +165,11 @@
 },{
 "url" : "http://4music.lt" , 
 "feedurl" : "http://www.4music.lt/rss.xml",
-"domain" : "www.4music.lt"
+"domain" : "4music.lt"
 },{
 "url" : "http://dwmp3.com" , 
 "feedurl" : "http://www.dwmp3.com/feed",
-"domain" : "www.dwmp3.com"
+"domain" : "dwmp3.com"
 },{
 "url" : "http://nusiolek.eu" , 
 "feedurl" : "http://nusiolek.eu/feed",
@@ -177,11 +177,11 @@
 },{
 "url" : "http://livingelectro.com" , 
 "feedurl" : "http://www.livingelectro.com/rss",
-"domain" : "www.livingelectro.com"
+"domain" : "livingelectro.com"
 },{
 "url" : "http://housezone.lt" , 
 "feedurl" : "http://www.housezone.lt/feed",
-"domain" : "www.housezone.lt"
+"domain" : "housezone.lt"
 },{
 "url" : "http://downsong.com" , 
 "feedurl" : "http://downsong.com/feed",
@@ -193,11 +193,11 @@
 },{
 "url" : "http://that-dj.com/" , 
 "feedurl" : "http://www.that-dj.com/feed",
-"domain" : "www.that-dj.com"
+"domain" : "that-dj.com"
 },{
 "url" : "http://www.4djsonline.com" , 
 "feedurl" : "http://www.4djsonline.com/feeds/posts/default",
-"domain" : "www.4djsonline.com"
+"domain" : "4djsonline.com"
 },{
 "url" : "http://htrk.org" , 
 "feedurl" : "http://htrk.org/feed",
