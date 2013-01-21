@@ -12,6 +12,7 @@ from scrapy.selector import XmlXPathSelector
 from scrapy import log
 import json
 import re
+from musiccrawler.items import DownloadLinkItem
 import math
 import musiccrawler.settings
 from musiccrawler.linkextractors import LxmlParserTreeLinkExtractor
@@ -53,8 +54,10 @@ class MyCustomXMLFeedSpider(CrawlSpider):
              )
     
     def parse_item(self, response):
-        print "JO"
-        self.log('Hi, this is an item page! %s' % response)
+        linkitem = DownloadLinkItem()
+        linkitem['url'] = response.url.split('" ')[0]
+        linkitem['source'] = 'http://www.bestclubsound.com'
+        yield linkitem
 
 
 #class XMLFeedSpider(CrawlSpider):        

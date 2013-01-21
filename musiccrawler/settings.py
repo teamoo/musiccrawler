@@ -25,10 +25,10 @@ MEMUSAGE_WARNING_MB = 800
 
 ITEM_PIPELINES = [
     'musiccrawler.pipelines.DuplicateURLsPipeline',
-    #'musiccrawler.pipelines.CheckMusicDownloadLinkPipeline',
+    'musiccrawler.pipelines.CheckMusicDownloadLinkPipeline',
     #'musiccrawler.pipelines.SOAPWSExportPipeline',
     #'musiccrawler.pipelines.RESTWSExportPipeline',
-    #'musiccrawler.pipelines.MongoDBExportPipeline'
+    'musiccrawler.pipelines.MongoDBExportPipeline'
 ]
 
 FEED_EXPORTERS = [
