@@ -23,14 +23,14 @@ class XMLFeedSpider(CrawlSpider):
     rules = (
         # Extract links matching 'category.php' (but not matching 'subsection.php')
         # and follow links from them (since no callback means follow=True by default).
-      Rule(SgmlLinkExtractor(attrs=('text()','value','version',None,''),tags=("channel","description","item","link")), callback='parse_item'),)
+      Rule(SgmlLinkExtractor(attrs=('text()', 'value', 'version', None, ''), tags=("channel", "description", "item", "link")), callback='parse_item'),)
 
 
     def parse_item(self, response):
         self.log('Hi, this is an item page! %s' % response)
 
 
-#class XMLFeedSpider(CrawlSpider):        
+# class XMLFeedSpider(CrawlSpider):        
 #    name = "xmlfeedspider"
 #
 #    allowed_domains = ['electropeople.org']

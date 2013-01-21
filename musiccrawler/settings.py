@@ -15,7 +15,7 @@ HTTPCACHE_ENABLED = True
 HTTPCACHE_EXPIRATION_SECS = 43200
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'musiccrawler (+http://www.yourdomain.com)'
+# USER_AGENT = 'musiccrawler (+http://www.yourdomain.com)'
 
 LOG_LEVEL = 'INFO'
 
@@ -27,7 +27,7 @@ ITEM_PIPELINES = [
     'musiccrawler.pipelines.DuplicateURLsPipeline',
     'musiccrawler.pipelines.CheckMusicDownloadLinkPipeline',
     'musiccrawler.pipelines.SOAPWSExportPipeline',
-    #'musiccrawler.pipelines.RESTWSExportPipeline',
+    # 'musiccrawler.pipelines.RESTWSExportPipeline',
     'musiccrawler.pipelines.MongoDBExportPipeline'
 ]
 
@@ -44,8 +44,8 @@ SPIDER_CONTRACTS = [
 WSDL_FILE = 'http://musiclink.webcomsult.de/v2/index.php?wsdl'
 REST_API_URL = 'http://musiclink.webcomsult.de/v2/rest.php'
 
-#MONGODB_SERVER = 'localhost'
-#MONGODB_PORT = 27017
+# MONGODB_SERVER = 'localhost'
+# MONGODB_PORT = 27017
 MONGODB_SERVER = 'linus.mongohq.com'
 MONGODB_PORT = 10050
 MONGODB_DB = 'musiccrawler'

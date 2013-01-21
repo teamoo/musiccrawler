@@ -39,26 +39,26 @@ class FeedSpider(BaseSpider):
             
         for i in range(int(math.ceil(len(hosts) / regex_group_count))):
             
-            hosterregex =''
+            hosterregex = ''
     
-            for hoster in hosts[(i+1)*regex_group_count-regex_group_count:(i+1)*regex_group_count]:
-                hosterpattern = unicode(hoster['pattern']).rstrip('\r\n').replace("/","\/").replace(":","\:").replace("\d+{","\d{").replace("++","+").replace("\r\n","").replace("|[\p{L}\w-%]+\/[\p{L}\w-%]+","") + '|'
+            for hoster in hosts[(i + 1) * regex_group_count - regex_group_count:(i + 1) * regex_group_count]:
+                hosterpattern = unicode(hoster['pattern']).rstrip('\r\n').replace("/", "\/").replace(":", "\:").replace("\d+{", "\d{").replace("++", "+").replace("\r\n", "").replace("|[\p{L}\w-%]+\/[\p{L}\w-%]+", "") + '|'
                 hosterregex += hosterpattern.encode('utf-8')
             
             self.regexes.append(re.compile("'" + hosterregex[:-1] + "'", re.IGNORECASE))
         
         log.msg("Spider initalized.", level=log.INFO)
                 
-    def parse(self,response):
+    def parse(self, response):
             rssFeed = feedparser.parse(response.url)
             
             if rssFeed.bozo == 1:
                 log.msg(("Feed kann nicht verarbeitet werden:" + str(response.url)), level=log.INFO)
             else:
                 for entry in rssFeed.entries:
-                    if (datetime.now() - monthdelta.MonthDelta(1)) < datetime.fromtimestamp(mktime(rssFeed.get('updated_parsed',''))):
+                    if (datetime.now() - monthdelta.MonthDelta(1)) < datetime.fromtimestamp(mktime(rssFeed.get('updated_parsed', ''))):
                         log.msg(("Verarbeite Feed:" + rssFeed.get('title', response.url)), level=log.INFO)
-                        if (datetime.now() - monthdelta.MonthDelta(1)) < datetime.fromtimestamp(mktime(entry.get('published_parsed',''))):
+                        if (datetime.now() - monthdelta.MonthDelta(1)) < datetime.fromtimestamp(mktime(entry.get('published_parsed', ''))):
                             log.msg(("Verarbeite Eintrag:" + entry.get('title', "unnamed entry")), level=log.DEBUG)
                             for regexpr in self.regexes:
                                 if 'summary' in entry:
@@ -66,21 +66,21 @@ class FeedSpider(BaseSpider):
                                     for match in iterator:
                                         linkitem = DownloadLinkItem()
                                         linkitem['url'] = match.group().split('" ')[0]
-                                        linkitem['source'] = str(rssFeed.get('link','unknown source'))
+                                        linkitem['source'] = str(rssFeed.get('link', 'unknown source'))
                                         yield linkitem
                                 if 'content' in entry:
                                     iterator = regexpr.finditer(str(entry.content))
                                     for match in iterator:
                                         linkitem = DownloadLinkItem()
                                         linkitem['url'] = match.group().split('" ')[0]
-                                        linkitem['source'] = str(rssFeed.get('link','unknown source'))
+                                        linkitem['source'] = str(rssFeed.get('link', 'unknown source'))
                                         yield linkitem
                                 if 'links' in entry:
                                     iterator = regexpr.finditer(str(entry.links))
                                     for match in iterator:
                                         linkitem = DownloadLinkItem()
                                         linkitem['url'] = match.group().split('" ')[0]
-                                        linkitem['source'] = str(rssFeed.get('link','unknown source'))
+                                        linkitem['source'] = str(rssFeed.get('link', 'unknown source'))
                                         yield linkitem
                         else:
                             log.msg(("Feed-Entry is older than 1 month:" + entry.get('title', "unnamed entry")), level=log.DEBUG)  

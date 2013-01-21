@@ -2,7 +2,7 @@ from scrapy.contracts import Contract
 from scrapy.exceptions import ContractFail
 
 class FeedHasBeenUpdateWithinSixMonthsContract(Contract):
-    name="feed_has_been_updated_within_six_months"
+    name = "feed_has_been_updated_within_six_months"
     
 class FeedHasItemsContract(Contract):
-    name="feed_has_items"    
+    name = "feed_has_items"    
