@@ -10,6 +10,7 @@ from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
 from scrapy.selector import XmlXPathSelector
 from scrapy import log
+from scrapy.contracts import Contract
 import json
 import re
 from musiccrawler.items import DownloadLinkItem
@@ -20,6 +21,7 @@ from musiccrawler.linkextractors import LxmlParserTreeLinkExtractor
 class MyCustomXMLFeedSpider(CrawlSpider):
     name = "xmlfeedspider"
 
+    #set later on
     #allowed_domains = ['electropeople.org']
     start_urls = ["http://www.bestclubsound.com/feed"]
 
@@ -28,9 +30,7 @@ class MyCustomXMLFeedSpider(CrawlSpider):
     regexes = []
         
     for i in range(int(math.ceil(len(hosts) / regex_group_count))):
-            
         hosterregex = ''
-    
         for hoster in hosts[(i + 1) * regex_group_count - regex_group_count:(i + 1) * regex_group_count]:
             hosterpattern = unicode(hoster['pattern']).rstrip('\r\n').replace("/", "\/").replace(":", "\:").replace("\d+{", "\d{").replace("++", "+").replace("\r\n", "").replace("|[\p{L}\w-%]+\/[\p{L}\w-%]+", "") + '|'
             hosterregex += hosterpattern.encode('utf-8')
@@ -54,6 +54,9 @@ class MyCustomXMLFeedSpider(CrawlSpider):
              )
     
     def parse_item(self, response):
+        @url http://www.bestclubsound.com/feed
+        @scrapes url source
+        @returns 1
         linkitem = DownloadLinkItem()
         linkitem['url'] = response.url.split('" ')[0]
         linkitem['source'] = 'http://www.bestclubsound.com'

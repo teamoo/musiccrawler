@@ -2,8 +2,9 @@ from scrapy.contrib.exporter import BaseItemExporter
 from SOAPpy import WSDL
 from siesta import API
 from scrapy import log
-import pymongo
+from datetime import datetime
 
+import pymongo
 import musiccrawler.settings
 
 class SOAPWSExporter(BaseItemExporter):
@@ -36,6 +37,7 @@ class MongoDBExporter(BaseItemExporter):
 
     def export_item(self, item):
         if self.__get_uniq_key() is None:
+            item['date'] = datetime.now()
             log.msg(("Sending item to MongoDB:" + str(item) + " " + str(dict(item))), level=log.DEBUG)
             self.collection.insert(dict(item))
         else:

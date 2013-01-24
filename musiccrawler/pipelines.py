@@ -37,6 +37,7 @@ class CheckMusicDownloadLinkPipeline(object):
     def process_item(self, item, spider):
         try:
             if re.match(self.urlregex, item['url']):
+                #TODO: mit dem richtigen item weiterarbeiten, nicht mit dem JSON-Teil!
                 self.mdlb.init(item['source'])
                 log.msg(("Sending URL to Linkbuilder: " + item['url']), level=log.DEBUG)
                 jsonresult = self.mdlb.buildMusicDownloadLink(item['url'])
