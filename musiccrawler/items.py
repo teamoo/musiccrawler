@@ -15,6 +15,8 @@ class DownloadLinkItem(Item):
     status = Field()
     source = Field()
     date = Field()
+    date_published = Field()
+    creator = Field()
     hoster = Field()
     password = Field()
     metainfo = Field()
