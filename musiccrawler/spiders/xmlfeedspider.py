@@ -54,9 +54,9 @@ class MyCustomXMLFeedSpider(CrawlSpider):
              )
     
     def parse_item(self, response):
-        @url http://www.bestclubsound.com/feed
-        @scrapes url source
-        @returns 1
+        #@url http://www.bestclubsound.com/feed
+        #@scrapes url source
+        #@returns 1
         linkitem = DownloadLinkItem()
         linkitem['url'] = response.url.split('" ')[0]
         linkitem['source'] = 'http://www.bestclubsound.com'

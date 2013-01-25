@@ -8,7 +8,8 @@
 
 BOT_NAME = 'musiccrawler'
 
-SPIDER_MODULES = ['musiccrawler.spiders.xmlfeedspider']
+SPIDER_MODULES = ['musiccrawler.spiders.xmlfeedspider',
+                  'musiccrawler.spiders.facebookgroupspider']
 NEWSPIDER_MODULE = 'musiccrawler.spiders.xmlfeedspider'
 
 HTTPCACHE_ENABLED = True
@@ -25,10 +26,10 @@ MEMUSAGE_WARNING_MB = 800
 
 ITEM_PIPELINES = [
     'musiccrawler.pipelines.DuplicateURLsPipeline',
-    'musiccrawler.pipelines.CheckMusicDownloadLinkPipeline',
+    #'musiccrawler.pipelines.CheckMusicDownloadLinkPipeline',
     #'musiccrawler.pipelines.SOAPWSExportPipeline',
     #'musiccrawler.pipelines.RESTWSExportPipeline',
-    'musiccrawler.pipelines.MongoDBExportPipeline'
+    #'musiccrawler.pipelines.MongoDBExportPipeline'
 ]
 
 FEED_EXPORTERS = [
@@ -56,3 +57,4 @@ MONGODB_PASSWORD = 'geheim'
 
 HOSTS_FILE_PATH = 'hosts.json'
 FEEDS_FILE_PATH = 'feeds.json'
+DECRYPTER_FILE_PATH = 'decrypter.json'
