@@ -18,15 +18,15 @@ import re
 class FacebookGroupSpider(BaseSpider):        
     name = "facebookgroupspider"
     
-    accesstoken = "AAAHh61ahtmABAKV6uk1LfReD8fjC3gNVZC5FdQCQEjgaZAsDo82WOMRiKZAVO4fYyaCIroR1YzTAromD19aDKYPJ0x7uRn8nJN9JZBDxGMzAYF2Ewcp6"
+    #TODO: muss immer neu generiert werden! einbauen...
+    accesstoken = "AAACEdEose0cBAGTZBdXyhpNPQmMnlrKYs4jvroeGXTkCyAl7kYNFTqwQGfqR5dMDAQ2rAZBVWtoKY7qFeKvFFRvMrp3pIT5OUUcmdgs3CzsZBxAFw71"
     
     source = 'https://www.facebook.com/groups/137328326321645'
     
     start_urls = ["https://graph.facebook.com/137328326321645/feed?access_token=" + accesstoken]
     
     def __init__(self):
-        
-        log.msg("Initalizing Spider", level=log.INFO)
+        log.msg("Initializing Spider", level=log.INFO)
         hosts = json.load(open(musiccrawler.settings.HOSTS_FILE_PATH))
         decrypters = json.load(open(musiccrawler.settings.DECRYPTER_FILE_PATH))
         regex_group_count = 50
@@ -42,19 +42,18 @@ class FacebookGroupSpider(BaseSpider):
             
             self.regexes.append(re.compile("'" + hosterregex[:-1] + "'", re.IGNORECASE))
         
+        regex_group_count = 40
+            
         for i in range(int(math.ceil(len(decrypters) / regex_group_count))):
             
             hosterregex = ''
     
             for decrypter in decrypters[(i + 1) * regex_group_count - regex_group_count:(i + 1) * regex_group_count]:
-                hosterpattern = unicode(decrypter['pattern']).rstrip('\r\n').replace("/", "\/",99).replace(":", "\:",99).replace("\d+{", "\d{",10).replace("++", "+",10).replace("\r\n", "",10).replace("|[\p{L}\w-%]+\/[\p{L}\w-%]+", "",10).replace("decrypted","",10).replace("httpJDYoutube","http",10) + '|'
+                hosterpattern = unicode(decrypter['pattern']).rstrip('\r\n') + '|'
                 hosterregex += hosterpattern.encode('utf-8')
-            
-            self.regexes.append(re.compile("'" + hosterregex[:-1] + "'", re.IGNORECASE))
+            self.regexes.append(re.compile("\"" + hosterregex[:-1] + "\"", re.IGNORECASE))
         
-        
-        
-        log.msg("Spider initalized.", level=log.INFO)
+        log.msg("Spider initialized.", level=log.INFO)
                 
     def parse(self, response):
         groupfeed = json.loads(response.body)
@@ -83,7 +82,6 @@ class FacebookGroupSpider(BaseSpider):
                 print linkitem['url']
                 linkitem['source'] = str(self.source)
                 yield linkitem   
-
             if 'comments' in item:
                 for comment in item['comments']:
                     if 'message' in comment:

@@ -1,313 +1,470 @@
-[ {
-"name" : "Boards of Electronica" ,
-"url" : "http://boardsofelectronica.blogspot.de" , 
-"feedurl" : "http://boardsofelectronica.blogspot.com/feeds/posts/default",
-"domain" : "boardsofelectronica.blogspot.com",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "Digital Eargasm" ,
-"url" : "http://digitaleargasm1.blogspot.de" , 
-"feedurl" : "http://feeds.feedburner.com/DigitalEargasm1",
-"domain" : "feeds.feedburner.com",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "DJ Theofrias" ,
-"url" : "http://djtheofrias.blogspot.de" , 
-"feedurl" : "http://djtheofrias.blogspot.com/feeds/posts/default",
-"domain" : "djtheofrias.blogspot.com",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "electrostation" ,
-"url" : "http://electrostation.net" , 
-"feedurl" : "http://electrostation.net/feed",
-"domain" : "electrostation.net",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "Fuckin' House" ,
-"url" : "http://fuckinhouse.com" , 
-"feedurl" : "http://feeds.feedburner.com/fuckinhousefeed",
-"domain" : "feeds.feedburner.com",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "Minimalistica" ,
-"url" : "http://minimalistica.org" , 
-"feedurl" : "http://minimalistica.org/feed",
-"domain" : "minimalistica.org",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "Projekt 1408" ,
-"url" : "http://projekt1408.blogspot.de" , 
-"feedurl" : "http://projekt1408.blogspot.com/feeds/posts/default",
-"domain" : "projekt1408.blogspot.com",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "Vibe4Me" ,
-"url" : "http://vibe4me.blogspot.de" , 
-"feedurl" : "http://vibe4me.blogspot.de/feeds/posts/default",
-"domain" : "vibe4me.blogspot.de",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "Beat My Day" ,
-"url" : "http://beatmyday.com" , 
-"feedurl" : "http://www.beatmyday.com/feed",
-"domain" : "beatmyday.com",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "Best ClubSound" ,
-"url" : "http://bestclubsound.com" , 
-"feedurl" : "http://www.bestclubsound.com/feed",
-"domain" : "bestclubsound.com",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "Hungy 4 Music" ,
-"url" : "http://hungry4music.com" , 
-"feedurl" : "http://feeds.feedburner.com/Itfeelslikesundaytous",
-"domain" : "feeds.feedburner.com",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "Minimaland" ,
-"url" : "http://minimaland.blogspot.de" , 
-"feedurl" : "http://minimaland.blogspot.com/feeds/posts/default",
-"domain" : "minimaland.blogspot.com",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "Minimalfreaks" ,
-"url" : "http://minimalfreaks.com" , 
-"feedurl" : "http://feeds.feedburner.com/minimalfreaks",
-"domain" : "feeds.feedburner.com",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "Progressive House Worldwide" ,
-"url" : "http://progressivehouseworldwide.com" , 
-"feedurl" : "http://www.progressivehouseworldwide.com/feed",
-"domain" : "progressivehouseworldwide.com",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "Tanz durch den Kiez" ,
-"url" : "http://tanzdurchdenkiez.de" , 
-"feedurl" : "http://www.tanzdurchdenkiez.de/feed",
-"domain" : "tanzdurchdenkiez.de",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "Deep and Beat" ,
-"url" : "http://deep-and-beat.com" , 
-"feedurl" : "http://feeds.feedburner.com/DeepAndBeat",
-"domain" : "feeds.feedburner.com",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "ElectronicFresh" ,
-"url" : "http://electronicfresh.com" , 
-"feedurl" : "http://electronicfresh.com/feed",
-"domain" : "electronicfresh.com",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "Electrobuzz" ,
-"url" : "http://electrobuzz.org" , 
-"feedurl" : "http://www.electrobuzz.org/feed",
-"domain" : "electrobuzz.org",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "What DJ plays" ,
-"url" : "http://whatdjplays.com" , 
-"feedurl" : "http://whatdjplays.com/feed",
-"domain" : "whatdjplays.com",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "electrouniverse" ,
-"url" : "http://electrouniverse.net" , 
-"feedurl" : "http://electrouniverse.net/feed",
-"domain" : "electrouniverse.net",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "HouseRavers" ,
-"url" : "http://houseravers.com" , 
-"feedurl" : "http://feeds.feedburner.com/HouseRavers",
-"domain" : "feeds.feedburner.com",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "Exclusive Music DJ" ,
-"url" : "http://exclusive-music-dj.com" , 
-"feedurl" : "http://www.exclusive-music-dj.com/feed",
-"domain" : "exclusive-music-dj.com",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "Orade Clubmusic" ,
-"url" : "http://oradeaclubmusic.blogspot.de" , 
-"feedurl" : "http://oradeaclubmusic.blogspot.de/feeds/posts/default",
-"domain" : "oradeaclubmusic.blogspot.de",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "DJ Robson Michel" ,
-"url" : "http://djrobsonmichel.com" , 
-"feedurl" : "http://feeds.feedburner.com/djrobsonmichel/YSqR",
-"domain" : "feeds.feedburner.com",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "Cahul House Mafia" ,
-"url" : "http://cahulhousemafia.net" , 
-"feedurl" : "http://cahulhousemafia.net/feed",
-"domain" : "cahulhousemafia.net",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
- },{
-"name" : "ElectroPeople" , 
-"url" : "http://electropeople.org" , 
-"feedurl" : "http://electropeople.org/rss.xml",
-"domain" : "electropeople.org",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "Club Box" ,
-"url" : "http://club-box-11.blogspot.de" , 
-"feedurl" : "http://www.club-box-11.blogspot.com/feeds/posts/default",
-"domain" : "club-box-11.blogspot.com",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "My Promosound" ,
-"url" : "http://mypromosound.com" , 
-"feedurl" : "http://mypromosound.com/feed",
-"domain" : "mypromosound.com",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "0-Day Music" ,
-"url" : "http://site.0daymusic.biz" , 
-"feedurl" : "http://site.0daymusic.biz/feed",
-"domain" : "site.0daymusic.biz",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "AllDJ" ,
-"url" : "http://alldj.org" , 
-"feedurl" : "http://feeds.feedburner.com/Only-New-Music-Releases_download-mediafire?format=xml",
-"domain" : "feeds.feedburner.com",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "House Music With Love" ,
-"url" : "http://hmwl.org" , 
-"feedurl" : "http://feeds.feedburner.com/housemusicwithlove?format=xml",
-"domain" : "feeds.feedburner.com",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "Somdefora" ,
-"url" : "http://somdefora.blogspot.de/" , 
-"feedurl" : "http://somdefora.blogspot.de/feeds/posts/default",
-"domain" : "somdefora.blogspot.de",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "Dunproofin'" ,
-"url" : "http://dunproofin.blogspot.de" , 
-"feedurl" : "http://dunproofin.blogspot.de/feeds/posts/default",
-"domain" : "dunproofin.blogspot.de",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "Supperbubbles" ,
-"url" : "http://supperbubbles.blogspot.de" , 
-"feedurl" : "http://supperbubbles.blogspot.de/feeds/posts/default",
-"domain" : "supperbubbles.blogspot.de",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "888 Music" ,
-"url" : "http://888music.com" , 
-"feedurl" : "http://www.888music.com/feed",
-"domain" : "888music.com",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "House4Deejay" ,
-"url" : "http://house4deejay.com" , 
-"feedurl" : "http://www.house4deejay.com/feed",
-"domain" : "house4deejay.com",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "Technoface" ,
-"url" : "http://technoface.hu/new/" , 
-"feedurl" : "http://technoface.hu/new/feed",
-"domain" : "technoface.hu",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
- },{
-"name" : "Electroever" ,
-"url" : "http://electroever.blogspot.de" , 
-"feedurl" : "http://electroever.blogspot.de/feeds/posts/default",
-"domain" : "electroever.blogspot.de",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "Techno Minimal Bit" ,
-"url" : "http://techno-minimal-bit.com" , 
-"feedurl" : "http://techno-minimal-bit.com/feed",
-"domain" : "techno-minimal-bit.com",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "Community Music DJ" ,
-"url" : "http://community-music-dj.com" , 
-"feedurl" : "http://www.community-music-dj.com/feeds/posts/default",
-"domain" : "community-music-dj.com",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "Grizzlis" ,
-"url" : "http://grizzlis.lt" , 
-"feedurl" : "http://grizzlis.lt/feed",
-"domain" : "grizzlis.lt",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "4Music" ,
-"url" : "http://4music.lt" , 
-"feedurl" : "http://www.4music.lt/rss.xml",
-"domain" : "4music.lt",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "dwmp3" ,
-"url" : "http://dwmp3.com" , 
-"feedurl" : "http://www.dwmp3.com/feed",
-"domain" : "dwmp3.com",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "nusiolek" ,
-"url" : "http://nusiolek.eu" , 
-"feedurl" : "http://nusiolek.eu/feed",
-"domain" : "nusiolek.eu",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "LivingElectro" ,
-"url" : "http://livingelectro.com" , 
-"feedurl" : "http://www.livingelectro.com/rss",
-"domain" : "livingelectro.com",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "HouseZone" ,
-"url" : "http://housezone.lt" , 
-"feedurl" : "http://www.housezone.lt/feed",
-"domain" : "housezone.lt",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "Downsong" ,
-"url" : "http://downsong.com" , 
-"feedurl" : "http://downsong.com/feed",
-"domain" : "downsong.com",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "Housemusic Fever" ,
-"url" : "http://housemusicfever.blogspot.de" , 
-"feedurl" : "http://housemusicfever.blogspot.de/feeds/posts/default",
-"domain" : "housemusicfever.blogspot.de",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "That DJ" ,
-"url" : "http://that-dj.com/" ,
-"feedurl" : "http://www.that-dj.com/feed",
-"domain" : "that-dj.com",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "4 DJs online" ,
-"url" : "http://www.4djsonline.com" , 
-"feedurl" : "http://www.4djsonline.com/feeds/posts/default",
-"domain" : "4djsonline.com",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
-},{
-"name" : "htrk" ,
-"url" : "http://htrk.org" , 
-"feedurl" : "http://htrk.org/feed",
-"domain" : "htrk.org",
- "active" : "true" , "type" : "feed" , "last_crawl" : null
- },{
- "name" : "Electrobriefkasten Facebook Gruppe" ,
- "url" : "https://www.facebook.com/groups/137328326321645" ,
- "feedurl" : "https://www.facebook.com/groups/137328326321645",
- "domain" : "htrk.org",
-  "active" : "true" , "type" : "facebook-group" , "last_crawl" : null
- }]
+[
+   {
+      "name":"Boards of Electronica",
+      "url":"http://boardsofelectronica.blogspot.de",
+      "feedurl":"http://boardsofelectronica.blogspot.com/feeds/posts/default",
+      "domain":"boardsofelectronica.blogspot.com",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"Digital Eargasm",
+      "url":"http://digitaleargasm1.blogspot.de",
+      "feedurl":"http://feeds.feedburner.com/DigitalEargasm1",
+      "domain":"feeds.feedburner.com",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"DJ Theofrias",
+      "url":"http://djtheofrias.blogspot.de",
+      "feedurl":"http://djtheofrias.blogspot.com/feeds/posts/default",
+      "domain":"djtheofrias.blogspot.com",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"electrostation",
+      "url":"http://electrostation.net",
+      "feedurl":"http://electrostation.net/feed",
+      "domain":"electrostation.net",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"Fuckin' House",
+      "url":"http://fuckinhouse.com",
+      "feedurl":"http://feeds.feedburner.com/fuckinhousefeed",
+      "domain":"feeds.feedburner.com",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"Minimalistica",
+      "url":"http://minimalistica.org",
+      "feedurl":"http://minimalistica.org/feed",
+      "domain":"minimalistica.org",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"Projekt 1408",
+      "url":"http://projekt1408.blogspot.de",
+      "feedurl":"http://projekt1408.blogspot.com/feeds/posts/default",
+      "domain":"projekt1408.blogspot.com",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"Vibe4Me",
+      "url":"http://vibe4me.blogspot.de",
+      "feedurl":"http://vibe4me.blogspot.de/feeds/posts/default",
+      "domain":"vibe4me.blogspot.de",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"Beat My Day",
+      "url":"http://beatmyday.com",
+      "feedurl":"http://www.beatmyday.com/feed",
+      "domain":"beatmyday.com",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"Best ClubSound",
+      "url":"http://bestclubsound.com",
+      "feedurl":"http://www.bestclubsound.com/feed",
+      "domain":"bestclubsound.com",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"Hungy 4 Music",
+      "url":"http://hungry4music.com",
+      "feedurl":"http://feeds.feedburner.com/Itfeelslikesundaytous",
+      "domain":"feeds.feedburner.com",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"Minimaland",
+      "url":"http://minimaland.blogspot.de",
+      "feedurl":"http://minimaland.blogspot.com/feeds/posts/default",
+      "domain":"minimaland.blogspot.com",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"Minimalfreaks",
+      "url":"http://minimalfreaks.com",
+      "feedurl":"http://feeds.feedburner.com/minimalfreaks",
+      "domain":"feeds.feedburner.com",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"Progressive House Worldwide",
+      "url":"http://progressivehouseworldwide.com",
+      "feedurl":"http://www.progressivehouseworldwide.com/feed",
+      "domain":"progressivehouseworldwide.com",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"Tanz durch den Kiez",
+      "url":"http://tanzdurchdenkiez.de",
+      "feedurl":"http://www.tanzdurchdenkiez.de/feed",
+      "domain":"tanzdurchdenkiez.de",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"Deep and Beat",
+      "url":"http://deep-and-beat.com",
+      "feedurl":"http://feeds.feedburner.com/DeepAndBeat",
+      "domain":"feeds.feedburner.com",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"ElectronicFresh",
+      "url":"http://electronicfresh.com",
+      "feedurl":"http://electronicfresh.com/feed",
+      "domain":"electronicfresh.com",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"Electrobuzz",
+      "url":"http://electrobuzz.org",
+      "feedurl":"http://www.electrobuzz.org/feed",
+      "domain":"electrobuzz.org",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"What DJ plays",
+      "url":"http://whatdjplays.com",
+      "feedurl":"http://whatdjplays.com/feed",
+      "domain":"whatdjplays.com",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"electrouniverse",
+      "url":"http://electrouniverse.net",
+      "feedurl":"http://electrouniverse.net/feed",
+      "domain":"electrouniverse.net",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"HouseRavers",
+      "url":"http://houseravers.com",
+      "feedurl":"http://feeds.feedburner.com/HouseRavers",
+      "domain":"feeds.feedburner.com",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"Exclusive Music DJ",
+      "url":"http://exclusive-music-dj.com",
+      "feedurl":"http://www.exclusive-music-dj.com/feed",
+      "domain":"exclusive-music-dj.com",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"Orade Clubmusic",
+      "url":"http://oradeaclubmusic.blogspot.de",
+      "feedurl":"http://oradeaclubmusic.blogspot.de/feeds/posts/default",
+      "domain":"oradeaclubmusic.blogspot.de",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"DJ Robson Michel",
+      "url":"http://djrobsonmichel.com",
+      "feedurl":"http://feeds.feedburner.com/djrobsonmichel/YSqR",
+      "domain":"feeds.feedburner.com",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"Cahul House Mafia",
+      "url":"http://cahulhousemafia.net",
+      "feedurl":"http://cahulhousemafia.net/feed",
+      "domain":"cahulhousemafia.net",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"ElectroPeople",
+      "url":"http://electropeople.org",
+      "feedurl":"http://electropeople.org/rss.xml",
+      "domain":"electropeople.org",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"Club Box",
+      "url":"http://club-box-11.blogspot.de",
+      "feedurl":"http://www.club-box-11.blogspot.com/feeds/posts/default",
+      "domain":"club-box-11.blogspot.com",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"My Promosound",
+      "url":"http://mypromosound.com",
+      "feedurl":"http://mypromosound.com/feed",
+      "domain":"mypromosound.com",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"0-Day Music",
+      "url":"http://site.0daymusic.biz",
+      "feedurl":"http://site.0daymusic.biz/feed",
+      "domain":"site.0daymusic.biz",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"AllDJ",
+      "url":"http://alldj.org",
+      "feedurl":"http://feeds.feedburner.com/Only-New-Music-Releases_download-mediafire?format=xml",
+      "domain":"feeds.feedburner.com",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"House Music With Love",
+      "url":"http://hmwl.org",
+      "feedurl":"http://feeds.feedburner.com/housemusicwithlove?format=xml",
+      "domain":"feeds.feedburner.com",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"Somdefora",
+      "url":"http://somdefora.blogspot.de/",
+      "feedurl":"http://somdefora.blogspot.de/feeds/posts/default",
+      "domain":"somdefora.blogspot.de",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"Dunproofin'",
+      "url":"http://dunproofin.blogspot.de",
+      "feedurl":"http://dunproofin.blogspot.de/feeds/posts/default",
+      "domain":"dunproofin.blogspot.de",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"Supperbubbles",
+      "url":"http://supperbubbles.blogspot.de",
+      "feedurl":"http://supperbubbles.blogspot.de/feeds/posts/default",
+      "domain":"supperbubbles.blogspot.de",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"888 Music",
+      "url":"http://888music.com",
+      "feedurl":"http://www.888music.com/feed",
+      "domain":"888music.com",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"House4Deejay",
+      "url":"http://house4deejay.com",
+      "feedurl":"http://www.house4deejay.com/feed",
+      "domain":"house4deejay.com",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"Technoface",
+      "url":"http://technoface.hu/new/",
+      "feedurl":"http://technoface.hu/new/feed",
+      "domain":"technoface.hu",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"Electroever",
+      "url":"http://electroever.blogspot.de",
+      "feedurl":"http://electroever.blogspot.de/feeds/posts/default",
+      "domain":"electroever.blogspot.de",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"Techno Minimal Bit",
+      "url":"http://techno-minimal-bit.com",
+      "feedurl":"http://techno-minimal-bit.com/feed",
+      "domain":"techno-minimal-bit.com",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"Community Music DJ",
+      "url":"http://community-music-dj.com",
+      "feedurl":"http://www.community-music-dj.com/feeds/posts/default",
+      "domain":"community-music-dj.com",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"Grizzlis",
+      "url":"http://grizzlis.lt",
+      "feedurl":"http://grizzlis.lt/feed",
+      "domain":"grizzlis.lt",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"4Music",
+      "url":"http://4music.lt",
+      "feedurl":"http://www.4music.lt/rss.xml",
+      "domain":"4music.lt",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"dwmp3",
+      "url":"http://dwmp3.com",
+      "feedurl":"http://www.dwmp3.com/feed",
+      "domain":"dwmp3.com",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"nusiolek",
+      "url":"http://nusiolek.eu",
+      "feedurl":"http://nusiolek.eu/feed",
+      "domain":"nusiolek.eu",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"LivingElectro",
+      "url":"http://livingelectro.com",
+      "feedurl":"http://www.livingelectro.com/rss",
+      "domain":"livingelectro.com",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"HouseZone",
+      "url":"http://housezone.lt",
+      "feedurl":"http://www.housezone.lt/feed",
+      "domain":"housezone.lt",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"Downsong",
+      "url":"http://downsong.com",
+      "feedurl":"http://downsong.com/feed",
+      "domain":"downsong.com",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"Housemusic Fever",
+      "url":"http://housemusicfever.blogspot.de",
+      "feedurl":"http://housemusicfever.blogspot.de/feeds/posts/default",
+      "domain":"housemusicfever.blogspot.de",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"That DJ",
+      "url":"http://that-dj.com/",
+      "feedurl":"http://www.that-dj.com/feed",
+      "domain":"that-dj.com",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"4 DJs online",
+      "url":"http://www.4djsonline.com",
+      "feedurl":"http://www.4djsonline.com/feeds/posts/default",
+      "domain":"4djsonline.com",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"htrk",
+      "url":"http://htrk.org",
+      "feedurl":"http://htrk.org/feed",
+      "domain":"htrk.org",
+      "active":"true",
+      "type":"feed",
+      "last_crawl":null
+   },
+   {
+      "name":"Electrobriefkasten Facebook Gruppe",
+      "url":"https://www.facebook.com/groups/137328326321645",
+      "feedurl":"https://www.facebook.com/groups/137328326321645",
+      "domain":"facebook.com",
+      "active":"true",
+      "type":"facebook-group",
+      "last_crawl":null
+   }
+]
