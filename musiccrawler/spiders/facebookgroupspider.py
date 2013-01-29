@@ -9,6 +9,7 @@
 from musiccrawler.items import DownloadLinkItem
 from scrapy import log
 from scrapy.spider import BaseSpider
+from datetime import datetime
 import json
 import math
 import musiccrawler.settings
@@ -69,18 +70,27 @@ class FacebookGroupSpider(BaseSpider):
                         linkitem['url'] = match.group().split('" ')[0]
                         print linkitem['url']
                         linkitem['source'] = str(self.source)
+                        linkitem['creator'] = item['from']['id']
+                        linkitem['date_published'] = datetime.strptime(item['created_time'], '%Y-%m-%dT%H:%M:%S%z')
+                        linkitem['date_discovered'] = datetime.now()
                         yield linkitem   
             if 'source' in item:
                 linkitem = DownloadLinkItem()
                 linkitem['url'] = match.group().split('" ')[0]
                 print linkitem['url']
                 linkitem['source'] = str(self.source)
+                linkitem['creator'] = item['from']['id']
+                linkitem['date_published'] = datetime.strptime(item['created_time'], '%Y-%m-%dT%H:%M:%S%z')
+                linkitem['date_discovered'] = datetime.now()
                 yield linkitem   
             if 'link' in item:
                 linkitem = DownloadLinkItem()
                 linkitem['url'] = match.group().split('" ')[0]
                 print linkitem['url']
                 linkitem['source'] = str(self.source)
+                linkitem['creator'] = item['from']['id']
+                linkitem['date_published'] = datetime.strptime(item['created_time'], '%Y-%m-%dT%H:%M:%S%z')
+                linkitem['date_discovered'] = datetime.now()
                 yield linkitem   
             if 'comments' in item:
                 for comment in item['comments']:
@@ -92,4 +102,7 @@ class FacebookGroupSpider(BaseSpider):
                                 linkitem['url'] = match.group().split('" ')[0]
                                 print linkitem['url']
                                 linkitem['source'] = str(self.source)
+                                linkitem['creator'] = comment['from']['id']
+                                linkitem['date_published'] = datetime.strptime(comment['created_time'], '%Y-%m-%dT%H:%M:%S%z')
+                                linkitem['date_discovered'] = datetime.now()
                                 yield linkitem   

@@ -14,7 +14,7 @@ class DownloadLinkItem(Item):
     size = Field()
     status = Field()
     source = Field()
-    date = Field()
+    date_discovered = Field()
     date_published = Field()
     creator = Field()
     hoster = Field()
