@@ -45,6 +45,7 @@ class CheckMusicDownloadLinkPipeline(object):
                     if jsonitem is None:
                         log.msg(("Linkbuilder returned corrupted information for link " + str(item['url'])) , level=log.WARNING)
                         item['status'] = 'unknown'
+                        item['name'] = item['url']
                         return item
                     else: 
                         item['status'] = jsonitem['status']
@@ -59,6 +60,7 @@ class CheckMusicDownloadLinkPipeline(object):
                 else:
                     log.msg(("Linkbuilder returned corrupted information for link " + str(item['url'])) , level=log.WARNING)
                     item['status'] = 'unknown'
+                    item['name'] = item['url']
                     return item
             else:
                 raise DropItem("Link-URL is invalid: ", item['url'], ", Item will be dropped.")
