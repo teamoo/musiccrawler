@@ -10,6 +10,7 @@ from musiccrawler.items import DownloadLinkItem
 from scrapy import log
 from scrapy.spider import BaseSpider
 from datetime import datetime
+from dateutil.parser import parse
 import json
 import math
 import musiccrawler.settings
@@ -20,7 +21,7 @@ class FacebookGroupSpider(BaseSpider):
     name = "facebookgroupspider"
     
     #TODO: muss immer neu generiert werden! einbauen...
-    accesstoken = "AAACEdEose0cBAGTZBdXyhpNPQmMnlrKYs4jvroeGXTkCyAl7kYNFTqwQGfqR5dMDAQ2rAZBVWtoKY7qFeKvFFRvMrp3pIT5OUUcmdgs3CzsZBxAFw71"
+    accesstoken = "AAACEdEose0cBAJRX2ZB7sZCvRS5nNRn6MfglMCZA0YEYIr51OEcZARPfGYOQY8SANPwoZBFGpwGu8vuDR4dwQYCdLZBPuePo4ECNksYh3ZBb8VZBwDtTsouo"
     
     source = 'https://www.facebook.com/groups/137328326321645'
     
@@ -67,29 +68,26 @@ class FacebookGroupSpider(BaseSpider):
                     iterator = regexpr.finditer(str(item['message']))
                     for match in iterator:
                         linkitem = DownloadLinkItem()
-                        linkitem['url'] = match.group().split('" ')[0]
-                        print linkitem['url']
+                        linkitem['url'] = match.group().split('" ')[0].split('\n')[0]
                         linkitem['source'] = str(self.source)
                         linkitem['creator'] = item['from']['id']
-                        linkitem['date_published'] = datetime.strptime(item['created_time'], '%Y-%m-%dT%H:%M:%S%z')
+                        linkitem['date_published'] = parse(item['created_time'])
                         linkitem['date_discovered'] = datetime.now()
                         yield linkitem   
             if 'source' in item:
                 linkitem = DownloadLinkItem()
-                linkitem['url'] = match.group().split('" ')[0]
-                print linkitem['url']
+                linkitem['url'] = match.group().split('" ')[0].split('\n')[0]
                 linkitem['source'] = str(self.source)
                 linkitem['creator'] = item['from']['id']
-                linkitem['date_published'] = datetime.strptime(item['created_time'], '%Y-%m-%dT%H:%M:%S%z')
+                linkitem['date_published'] = parse(item['created_time'])
                 linkitem['date_discovered'] = datetime.now()
                 yield linkitem   
             if 'link' in item:
                 linkitem = DownloadLinkItem()
-                linkitem['url'] = match.group().split('" ')[0]
-                print linkitem['url']
+                linkitem['url'] = match.group().split('" ')[0].split('\n')[0]
                 linkitem['source'] = str(self.source)
                 linkitem['creator'] = item['from']['id']
-                linkitem['date_published'] = datetime.strptime(item['created_time'], '%Y-%m-%dT%H:%M:%S%z')
+                linkitem['date_published'] = parse(item['created_time'])
                 linkitem['date_discovered'] = datetime.now()
                 yield linkitem   
             if 'comments' in item:
@@ -99,10 +97,9 @@ class FacebookGroupSpider(BaseSpider):
                             iterator = regexpr.finditer(str(item['message']))
                             for match in iterator:
                                 linkitem = DownloadLinkItem()
-                                linkitem['url'] = match.group().split('" ')[0]
-                                print linkitem['url']
+                                linkitem['url'] = match.group().split('" ')[0].split('\n')[0]
                                 linkitem['source'] = str(self.source)
                                 linkitem['creator'] = comment['from']['id']
-                                linkitem['date_published'] = datetime.strptime(comment['created_time'], '%Y-%m-%dT%H:%M:%S%z')
+                                linkitem['date_published'] = parse(comment['created_time'])
                                 linkitem['date_discovered'] = datetime.now()
                                 yield linkitem   

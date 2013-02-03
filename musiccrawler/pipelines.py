@@ -8,7 +8,6 @@ from py4j.protocol import Py4JError
 from py4j.java_gateway import logging
 from scrapy.exceptions import DropItem
 from scrapy import signals
-from datetime import datetime
 from musiccrawler.exporters import SOAPWSExporter
 from musiccrawler.exporters import RESTWSExporter
 from musiccrawler.exporters import MongoDBExporter
@@ -37,21 +36,30 @@ class CheckMusicDownloadLinkPipeline(object):
     def process_item(self, item, spider):
         try:
             if re.match(self.urlregex, item['url']):
-                #TODO: mit dem richtigen item weiterarbeiten, nicht mit dem JSON-Teil!
                 self.mdlb.init(item['source'])
                 log.msg(("Sending URL to Linkbuilder: " + item['url']), level=log.DEBUG)
                 jsonresult = self.mdlb.buildMusicDownloadLink(item['url'])
-                log.msg(("Linkbuilder returned jsonstring: " + jsonresult), level=log.DEBUG)
                 if not jsonresult is None:
+                    log.msg(("Linkbuilder returned jsonstring: " + jsonresult), level=log.DEBUG)
                     jsonitem = json.loads(jsonresult)
-                    jsonitem['password'] = item.get('password', "")
-                    jsonitem['metainfo'] = item.get('metainfo', "")
-                    jsonitem['date'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                if jsonitem is None:
-                    raise DropItem("No item returned. Linkbuilder may be corrupt.")
+                    if jsonitem is None:
+                        log.msg(("Linkbuilder returned corrupted information for link " + str(item['url'])) , level=log.WARNING)
+                        item['status'] = 'unknown'
+                        return item
+                    else: 
+                        item['status'] = jsonitem['status']
+                        item['url'] = jsonitem['url']
+                        item['hoster'] = jsonitem['hoster']
+                        item['name'] = jsonitem['name']
+                        #item['password'] = jsonitem['password']
+                        #item['metainfo'] = jsonitem['metainfo']
+                        item['size'] = jsonitem['size']
+                        log.msg(("Linkbuilder returned item:" + str(jsonitem)), level=log.DEBUG)
+                        return item
                 else:
-                    log.msg(("Linkbuilder returned item:" + str(jsonitem)), level=log.DEBUG)
-                    return jsonitem
+                    log.msg(("Linkbuilder returned corrupted information for link " + str(item['url'])) , level=log.WARNING)
+                    item['status'] = 'unknown'
+                    return item
             else:
                 raise DropItem("Link-URL is invalid: ", item['url'], ", Item will be dropped.")
         except Py4JError:

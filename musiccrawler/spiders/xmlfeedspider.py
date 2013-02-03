@@ -18,7 +18,7 @@ import math
 import musiccrawler.settings
 from musiccrawler.linkextractors import LxmlParserTreeLinkExtractor
 
-class MyCustomXMLFeedSpider(CrawlSpider):
+class XMLFeedSpiderExperimental(CrawlSpider):
     name = "xmlfeedspider"
 
     #set later on
