@@ -18,25 +18,19 @@ import monthdelta
 from datetime import datetime
 from time import mktime
 from musiccrawler.items import DownloadLinkItem
-from scrapy.http import Request, response
+from scrapy.http import Request
 
 class FeedSpider(BaseSpider):        
     name = "feedspider"
     
-    def __init__(self):
+    def __init__(self, **kwargs):
         log.msg("Initializing Spider", level=log.INFO)
         hosts = json.load(open(musiccrawler.settings.HOSTS_FILE_PATH))
         decrypters = json.load(open(musiccrawler.settings.DECRYPTER_FILE_PATH))
-        feeds = json.load(open(musiccrawler.settings.FEEDS_FILE_PATH))
         regex_group_count = 50
         self.regexes = []
         
-        feedurls = []
-        
-        for feed in feeds:
-            feedurls.append(feed['feedurl'])
-           
-        self.start_urls = [feedurls[3]]
+        self.start_urls = [kwargs.get('feedurl')];
         
         for i in range(int(math.ceil(len(hosts) / regex_group_count))):
             
