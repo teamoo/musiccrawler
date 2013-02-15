@@ -133,5 +133,4 @@ class FeedSpider(BaseSpider):
                 
     def handle_spider_closed(self, spider, reason):
         if reason == "finished":
-            self.site["last_crawled"] = datetime.now()
-            self.site["next_crawl"] = None
+            self.collection.update({"feedurl" : self.source},{"$set" : {"last_crawled" : datetime.now(), "next_crawl" : None}})

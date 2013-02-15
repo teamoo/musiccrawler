@@ -1,5 +1,7 @@
 from musiccrawler.items import DownloadLinkItem
 from scrapy import log
+from scrapy import signals
+from scrapy.xlib.pydispatch import dispatcher
 from scrapy.spider import BaseSpider
 from datetime import datetime
 from dateutil.parser import parse
@@ -13,19 +15,19 @@ import re
 class FacebookGroupSpider(BaseSpider):        
     name = "facebookgroupspider"
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         log.msg("Initializing Spider", level=log.INFO)
-        log.msg("Initializing Spider", level=log.INFO)
+        dispatcher.connect(self.handle_spider_closed, signals.spider_closed)
         connection = pymongo.Connection(musiccrawler.settings.MONGODB_SERVER, musiccrawler.settings.MONGODB_PORT)
         self.db = connection[musiccrawler.settings.MONGODB_DB]
         self.db.authenticate(musiccrawler.settings.MONGODB_USER, musiccrawler.settings.MONGODB_PASSWORD)
         self.collection = self.db['sites']
-        self.site = self.collection.find_one({"feedurl": self.source})
-        log.msg("Received Site from Database:" + self.site, level=log.INFO)
+        self.site = self.collection.find_one({"feedurl": kwargs.get('feedurl')})
+        log.msg("Received Site from Database:" + str(self.site), level=log.INFO)
         self.source = self.site['feedurl']
         
         accesstoken = self.site['accesstoken']
-        
+        #TODO das muss noch bereinigt werden, die Gruppennummer aus dem Link holen
         self.start_urls = ["https://graph.facebook.com/137328326321645/feed?access_token=" + accesstoken]
         
         hosts = json.load(open(musiccrawler.settings.HOSTS_FILE_PATH))
@@ -74,21 +76,27 @@ class FacebookGroupSpider(BaseSpider):
                         linkitem['date_discovered'] = datetime.now()
                         yield linkitem   
             if 'source' in item:
-                linkitem = DownloadLinkItem()
-                linkitem['url'] = match.group().split('" ')[0].split('\n')[0]
-                linkitem['source'] = str(self.source)
-                linkitem['creator'] = item['from']['id']
-                linkitem['date_published'] = parse(item['created_time'])
-                linkitem['date_discovered'] = datetime.now()
-                yield linkitem   
+                for regexpr in self.regexes:
+                    iterator = regexpr.finditer(str(item['message']))
+                    for match in iterator:
+                        linkitem = DownloadLinkItem()
+                        linkitem['url'] = match.group().split('" ')[0].split('\n')[0]
+                        linkitem['source'] = str(self.source)
+                        linkitem['creator'] = item['from']['id']
+                        linkitem['date_published'] = parse(item['created_time'])
+                        linkitem['date_discovered'] = datetime.now()
+                        yield linkitem   
             if 'link' in item:
-                linkitem = DownloadLinkItem()
-                linkitem['url'] = match.group().split('" ')[0].split('\n')[0]
-                linkitem['source'] = str(self.source)
-                linkitem['creator'] = item['from']['id']
-                linkitem['date_published'] = parse(item['created_time'])
-                linkitem['date_discovered'] = datetime.now()
-                yield linkitem   
+                for regexpr in self.regexes:
+                    iterator = regexpr.finditer(str(item['message']))
+                    for match in iterator:
+                        linkitem = DownloadLinkItem()
+                        linkitem['url'] = match.group().split('" ')[0].split('\n')[0]
+                        linkitem['source'] = str(self.source)
+                        linkitem['creator'] = item['from']['id']
+                        linkitem['date_published'] = parse(item['created_time'])
+                        linkitem['date_discovered'] = datetime.now()
+                        yield linkitem   
             if 'comments' in item:
                 for comment in item['comments']:
                     if 'message' in comment:
@@ -101,4 +109,8 @@ class FacebookGroupSpider(BaseSpider):
                                 linkitem['creator'] = comment['from']['id']
                                 linkitem['date_published'] = parse(comment['created_time'])
                                 linkitem['date_discovered'] = datetime.now()
-                                yield linkitem   
+                                yield linkitem
+                                
+    def handle_spider_closed(self, spider, reason):
+        if reason == "finished":
+            self.collection.update({"feedurl" : self.source},{"$set" : {"last_crawled" : datetime.now(), "next_crawl" : None}})
