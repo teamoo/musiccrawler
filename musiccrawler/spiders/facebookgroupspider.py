@@ -12,14 +12,7 @@ import re
 
 class FacebookGroupSpider(BaseSpider):        
     name = "facebookgroupspider"
-    
-    #TODO: muss immer neu generiert werden! einbauen...
-    accesstoken = "AAACEdEose0cBAJRX2ZB7sZCvRS5nNRn6MfglMCZA0YEYIr51OEcZARPfGYOQY8SANPwoZBFGpwGu8vuDR4dwQYCdLZBPuePo4ECNksYh3ZBb8VZBwDtTsouo"
-    
-    source = 'https://facebook.com/groups/137328326321645'
-    
-    start_urls = ["https://graph.facebook.com/137328326321645/feed?access_token=" + accesstoken]
-    
+
     def __init__(self):
         log.msg("Initializing Spider", level=log.INFO)
         log.msg("Initializing Spider", level=log.INFO)
@@ -27,8 +20,13 @@ class FacebookGroupSpider(BaseSpider):
         self.db = connection[musiccrawler.settings.MONGODB_DB]
         self.db.authenticate(musiccrawler.settings.MONGODB_USER, musiccrawler.settings.MONGODB_PASSWORD)
         self.collection = self.db['sites']
-        site = self.collection.find_one({"feedurl": self.source})
-        log.msg("Received Site from Database:" + site, level=log.INFO)
+        self.site = self.collection.find_one({"feedurl": self.source})
+        log.msg("Received Site from Database:" + self.site, level=log.INFO)
+        self.source = self.site['feedurl']
+        
+        accesstoken = self.site['accesstoken']
+        
+        self.start_urls = ["https://graph.facebook.com/137328326321645/feed?access_token=" + accesstoken]
         
         hosts = json.load(open(musiccrawler.settings.HOSTS_FILE_PATH))
         decrypters = json.load(open(musiccrawler.settings.DECRYPTER_FILE_PATH))
