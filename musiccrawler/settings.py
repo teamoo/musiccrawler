@@ -56,5 +56,4 @@ MONGODB_USER = 'dbuser'
 MONGODB_PASSWORD = 'geheim'
 
 HOSTS_FILE_PATH = 'hosts.json'
-FEEDS_FILE_PATH = 'feeds.json'
 DECRYPTER_FILE_PATH = 'decrypter.json'

@@ -9,6 +9,7 @@
 from scrapy.spider import BaseSpider
 from scrapy import log
 
+import pymongo
 import feedparser
 import re
 import json
@@ -25,15 +26,21 @@ class FeedSpider(BaseSpider):
     
     def __init__(self, **kwargs):
         log.msg("Initializing Spider", level=log.INFO)
+        connection = pymongo.Connection(musiccrawler.settings.MONGODB_SERVER, musiccrawler.settings.MONGODB_PORT)
+        self.db = connection[musiccrawler.settings.MONGODB_DB]
+        self.db.authenticate(musiccrawler.settings.MONGODB_USER, musiccrawler.settings.MONGODB_PASSWORD)
+        self.collection = self.db['sites']
+        site = self.collection.find_one({"feedurl": kwargs.get('feedurl')})
+        log.msg("Received Site from Database:" + site, level=log.INFO)
+        
         hosts = json.load(open(musiccrawler.settings.HOSTS_FILE_PATH))
         decrypters = json.load(open(musiccrawler.settings.DECRYPTER_FILE_PATH))
-        regex_group_count = 50
+        regex_group_count = 40
         self.regexes = []
         
         self.start_urls = [kwargs.get('feedurl')];
         
         for i in range(int(math.ceil(len(hosts) / regex_group_count))):
-            
             hosterregex = ''
     
             for hoster in hosts[(i + 1) * regex_group_count - regex_group_count:(i + 1) * regex_group_count]:
@@ -41,11 +48,8 @@ class FeedSpider(BaseSpider):
                 hosterregex += hosterpattern.encode('utf-8')
             
             self.regexes.append(re.compile("'" + hosterregex[:-1] + "'", re.IGNORECASE))
-        
-        regex_group_count = 40
             
         for i in range(int(math.ceil(len(decrypters) / regex_group_count))):
-            
             hosterregex = ''
     
             for decrypter in decrypters[(i + 1) * regex_group_count - regex_group_count:(i + 1) * regex_group_count]:
