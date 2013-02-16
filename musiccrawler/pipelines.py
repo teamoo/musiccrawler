@@ -108,28 +108,7 @@ class SOAPWSExportPipeline(object):
     def process_item(self, item, spider):
         self.exporter.export_item(item)
         return item
-    
-class RESTExportPipeline(object):
-    def __init__(self):
-        self.exporter = RESTWSExporter();
-
-    @classmethod
-    def from_crawler(cls, crawler):
-        pipeline = cls()
-        crawler.signals.connect(pipeline.spider_opened, signals.spider_opened)
-        crawler.signals.connect(pipeline.spider_closed, signals.spider_closed)
-        return pipeline
-
-    def spider_opened(self, spider):
-        self.exporter.start_exporting()
-
-    def spider_closed(self, spider):
-        self.exporter.finish_exporting()
-
-    def process_item(self, item, spider):
-        self.exporter.export_item(item)
-        return item
-    
+        
 class MongoDBExportPipeline(object):
     def __init__(self):
         self.exporter = MongoDBExporter();
