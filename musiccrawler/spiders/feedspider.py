@@ -128,7 +128,8 @@ class FeedSpider(BaseSpider):
                         else:
                             log.msg(("Feed-Entry is older than 2 month:" + entry.get('title', "unnamed entry")), level=log.DEBUG)  
                     else:
-                        log.msg(("Feed has not been updated within 3 months:" + entry.get('title', "unnamed entry")), level=log.INFO)
+                        log.msg(("Feed has not been updated within 3 months:" + entry.get('title', "unnamed entry")) + ", DEACTIVATING FEED!", level=log.WARNING)
+                        self.collection.update({"feedurl" : self.source},{"$set" : {"active" : False}})
         
     def parse_entry_html(self, response):
         for regexpr in self.regexes:
