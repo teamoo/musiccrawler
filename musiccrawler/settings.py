@@ -47,13 +47,13 @@ REST_API_URL = 'http://musiclink.webcomsult.de/v2/rest.php'
 
 # MONGODB_SERVER = 'localhost'
 # MONGODB_PORT = 27017
-MONGODB_SERVER = 'linus.mongohq.com'
+MONGODB_SERVER = '176.9.169.133'
 MONGODB_PORT = 10050
 MONGODB_DB = 'musiccrawler'
 MONGODB_COLLECTION = 'links'
 MONGODB_UNIQ_KEY = 'url'
 MONGODB_USER = 'dbuser'
-MONGODB_PASSWORD = 'geheim'
+MONGODB_PASSWORD = 'lsyas_hgngeheimoder'
 
 HOSTS_FILE_PATH = 'hosts.json'
 DECRYPTER_FILE_PATH = 'decrypter.json'

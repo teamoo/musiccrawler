@@ -30,44 +30,9 @@
       "class":"AllSharesCom"
    },
    {
-      "pattern":"http://(www\\.)?amateurdumper\\.com/(index\\.php\\?ctr=view\\&id=\\d+|\\d+/.*?\\.html)",
-      "name":"amateurdumper.com",
-      "class":"AmateurDumperCom"
-   },
-   {
-      "pattern":"http://(www\\.)?amateurgalore\\.net/index/video/[a-z0-9_\\-]+",
-      "name":"amateurgalore.net",
-      "class":"AmateurGaloreNet"
-   },
-   {
-      "pattern":"http://(www\\.)?amateurmasturbations\\.com/(\\d+/[a-z0-9\\-]+/|video/\\d+/.*?\\.html)",
-      "name":"amateurmasturbations.com",
-      "class":"AmateurMasturbationsCom"
-   },
-   {
-      "pattern":"http://((www\\.)?animea\\.net/download/[\\d\\-]+/[\\w\\-]+episode\\-[\\d+\\.]+\\.html|manga\\.animea\\.net/[\\w\\-]+chapter\\-[\\d+\\.]+(\\-page\\-[\\d+\\.]+)?\\.html)",
-      "name":"animea.net",
-      "class":"AneaNt"
-   },
-   {
-      "pattern":"http://(www\\.)?anilinkz\\.com/(?!get|img|dsa|series|forums|files|category).+/.+",
-      "name":"anilinkz.com",
-      "class":"AniLinkzCom"
-   },
-   {
       "pattern":"http://(www\\.)?antena3.com/videos/[-/\\dA-Za-c]+.html",
       "name":"antena3.com",
       "class":"Antena3ComSalon"
-   },
-   {
-      "pattern":"http://[\\w\\.]*?apple\\.com/trailers/[a-zA-Z0-9_/]+/",
-      "name":"apple.com",
-      "class":"AppleTrailer"
-   },
-   {
-      "pattern":"http://(www\\.)?apptrackr\\.(org|cd)/s/\\?url=[A-Za-z0-9_\\-]+",
-      "name":"apptrackr.org",
-      "class":"ApTrackrOrg"
    },
    {
       "pattern":"http://(www\\.)?apunkabollywood\\.net/browser/category/view/\\d+",
@@ -120,21 +85,6 @@
       "class":"BergFilesCom"
    },
    {
-      "pattern":"http://(www\\.)?bestjailbaitphotos\\.com/index\\.php/component/joomgallery/(user\\-gallerys/[a-z0-9\\-_]+)?[a-z0-9\\-_]+(\\?page=\\d+)?",
-      "name":"bestjailbaitphotos.com",
-      "class":"BestJailBaitPhotosCom"
-   },
-   {
-      "pattern":"http://(www\\.)?bestwebcamtube\\.com/\\?p=\\d+",
-      "name":"bestwebcamtube.com",
-      "class":"BestWebCamTubeCom"
-   },
-   {
-      "pattern":"http://(www\\.)?bing\\.com/videos/watch/video/.*?/[a-z0-9]+",
-      "name":"bing.com",
-      "class":"BingCom"
-   },
-   {
       "pattern":"http://(www\\.)?bitbonus\\.com/download/[A-Za-z0-9\\-]+",
       "name":"bitbonus.com",
       "class":"BitBonusComDecrypt"
@@ -170,11 +120,6 @@
       "class":"BxNt"
    },
    {
-      "pattern":"http://(www\\.)?chip\\.de/bildergalerie/.*?_\\d+\\.html",
-      "name":"chip.de",
-      "class":"ChipDeGallerie"
-   },
-   {
       "pattern":"http://[\\w\\.]*?chauthanh\\.info/animeDownload/anime/.*?\\.html",
       "name":"chauthanh.info",
       "class":"ChThnhInfo"
@@ -200,11 +145,6 @@
       "class":"CloudzerNetFolder"
    },
    {
-      "pattern":"http://(www\\.)?clipfish\\.de/(.*?channel/\\d+/video/\\d+|video/\\d+(/.+)?|special/.*?/video/\\d+|musikvideos/video/\\d+(/.+)?)",
-      "name":"clipfish.de",
-      "class":"ClpfshD"
-   },
-   {
       "pattern":"http://[\\w\\.]*?top-hitz\\.com/(\\?id=.+|[\\?]*?/.*?\\.html|category/.*?/.*?\\.html|download/.*?/.*?\\.html|.*?/.*?\\.html)",
       "name":"top-hitz.com",
       "class":"CMS"
@@ -222,26 +162,6 @@
    {
       "pattern":"http://[\\w\\.]*?omega-music\\.com/(\\?id=.+|[\\?]*?/.*?\\.html|category/.*?/.*?\\.html|download/.*?/.*?\\.html|.*?/.*?\\.html)",
       "name":"omega-music.com",
-      "class":"CMS"
-   },
-   {
-      "pattern":"http://[\\w\\.]*?hardcoremetal\\.biz/(\\?id=.+|[\\?]*?/.*?\\.html|category/.*?/.*?\\.html|download/.*?/.*?\\.html|.*?/.*?\\.html)",
-      "name":"hardcoremetal.biz",
-      "class":"CMS"
-   },
-   {
-      "pattern":"http://[\\w\\.]*?hardcoremetal\\.bz/(\\?id=.+|[\\?]*?/.*?\\.html|category/.*?/.*?\\.html|download/.*?/.*?\\.html|.*?/.*?\\.html)",
-      "name":"hardcoremetal.bz",
-      "class":"CMS"
-   },
-   {
-      "pattern":"http://[\\w\\.]*?saugking\\.net/(\\?id=.+|[\\?]*?/.*?\\.html|category/.*?/.*?\\.html|download/.*?/.*?\\.html|.*?/.*?\\.html)",
-      "name":"saugking.net",
-      "class":"CMS"
-   },
-   {
-      "pattern":"http://[\\w\\.]*?porn-traffic\\.net/(\\?id=.+|[\\?]*?/.*?\\.html|category/.*?/.*?\\.html|download/.*?/.*?\\.html|.*?/.*?\\.html)",
-      "name":"porn-traffic.net",
       "class":"CMS"
    },
    {
@@ -303,11 +223,6 @@
       "pattern":"http://[uu\\.canna\\.to|85\\.17\\.36\\.224]+/cpuser/links\\.php\\?action=[cp_]*?popup&kat_id=[\\d]+&fileid=[\\d]+",
       "name":"canna.to",
       "class":"CnnT"
-   },
-   {
-      "pattern":"http://[\\w\\.]*?4players\\.de/\\S*/download/[0-9]+/([01]/)?index\\.html?",
-      "name":"counterstrike.de",
-      "class":"CntrstrkD"
    },
    {
       "pattern":"RIP://(www\\.)?copyload\\.com/[a-z0-9]{12}",
@@ -985,11 +900,6 @@
       "class":"DpstFlsCm"
    },
    {
-      "pattern":"http://(www\\.)?dreamamateurs\\.com/[A-Za-z0-9]+/\\d+/.*?\\.html",
-      "name":"dreamamateurs.com",
-      "class":"DreamAmateursCom"
-   },
-   {
       "pattern":"https?://(www\\.)?dropbox\\.com/sh/.+",
       "name":"dropbox.com",
       "class":"DropBoxCom"
@@ -1018,11 +928,6 @@
       "pattern":"http://(www\\.)?e\\-bol\\.net/(?!wp\\-content|kategorie|feed|\\d{4}/|page|tag|goto|kontakt|ueber\\-uns|wp\\-includes)[a-z0-9\\-]+/",
       "name":"e-bol.net",
       "class":"EBlNt"
-   },
-   {
-      "pattern":"http://(www\\.)?g\\.e\\-hentai\\.org/g/\\d+/[a-z0-9]+",
-      "name":"e-hentai.org",
-      "class":"EHentaiOrg"
    },
    {
       "pattern":"http://(www\\.)?8tracks\\.com/(?!assets_js/|explore|auth|settings|mixes)[\\w\\-]+/[\\w\\-]+",
@@ -1513,46 +1418,6 @@
       "pattern":"http://(www\\.)?ge\\.tt/(?!developers|press|tools|notifications|blog|about|javascript|button|contact|terms|api)#?[A-Za-z0-9]+(/v/\\d+)?",
       "name":"ge.tt",
       "class":"GeTtDecrypter"
-   },
-   {
-      "pattern":"http://books.google.[a-z]+/books\\?id=[0-9a-zA-Z-_]+.*",
-      "name":"books.google.com",
-      "class":"GglBks"
-   },
-   {
-      "pattern":"http://groups.google.com/group/[^/]+/files/?",
-      "name":"googlegroups.com",
-      "class":"GglGrps"
-   },
-   {
-      "pattern":"http://(www\\.)?gigabase\\.com/folder/[A-Za-z0-9]+/[^<>\"/]*?\\.html",
-      "name":"gigabase.com",
-      "class":"GigaBaseComFolder"
-   },
-   {
-      "pattern":"http://(www\\.)?giga\\.de/tv/(?!live|alle\\-videos|downloads)[a-z0-9\\-]+/",
-      "name":"giga.de",
-      "class":"GigaDe"
-   },
-   {
-      "pattern":"http://(www\\.)?goldesel\\.to/download/\\d+/.{1}",
-      "name":"goldesel.to",
-      "class":"GldSlTo"
-   },
-   {
-      "pattern":"http://(www\\.)?game\\-freaks\\.net/(download/.*?\\d+\\.html|\\?id=\\d+)",
-      "name":"game-freaks.net",
-      "class":"GmFrksNt"
-   },
-   {
-      "pattern":"http://(www\\.)?gogoanime\\.com/(?!category|thumbs|sitemap|img)[a-z0-9\\-]+(/\\d+)?",
-      "name":"gogoanime.com",
-      "class":"GogoanimeCom"
-   },
-   {
-      "pattern":"https?://(www\\.)?gokuai\\.com/a/[a-zA-Z0-9]{16}(/[a-z0-9]{40})?",
-      "name":"gokuai.com",
-      "class":"GoKuaiComFolder"
    },
    {
       "pattern":"http://(listen\\.)?grooveshark\\.com/([#!/%21]+)?((album|artist|playlist|s|user)/.*?/([a-zA-z0-9]+|\\d+)(/music/favorites|/similar)?|popular)",

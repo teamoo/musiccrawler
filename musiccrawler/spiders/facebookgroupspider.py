@@ -32,7 +32,7 @@ class FacebookGroupSpider(BaseSpider):
         
         hosts = json.load(open(musiccrawler.settings.HOSTS_FILE_PATH))
         decrypters = json.load(open(musiccrawler.settings.DECRYPTER_FILE_PATH))
-        regex_group_count = 50
+        regex_group_count = 40
         self.regexes = []
 
         for i in range(int(math.ceil(len(hosts) / regex_group_count))):
@@ -44,8 +44,6 @@ class FacebookGroupSpider(BaseSpider):
                 hosterregex += hosterpattern.encode('utf-8')
             
             self.regexes.append(re.compile("'" + hosterregex[:-1] + "'", re.IGNORECASE))
-        
-        regex_group_count = 40
             
         for i in range(int(math.ceil(len(decrypters) / regex_group_count))):
             
@@ -113,4 +111,5 @@ class FacebookGroupSpider(BaseSpider):
                                 
     def handle_spider_closed(self, spider, reason):
         if reason == "finished":
+            print "Spider finished, updating site record"
             self.collection.update({"feedurl" : self.source},{"$set" : {"last_crawled" : datetime.now(), "next_crawl" : None}})
