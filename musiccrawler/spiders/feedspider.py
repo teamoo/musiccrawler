@@ -34,11 +34,18 @@ class FeedSpider(BaseSpider):
         self.db.authenticate(musiccrawler.settings.MONGODB_USER, musiccrawler.settings.MONGODB_PASSWORD)
         self.collection = self.db['sites']
         self.site = self.collection.find_one({"feedurl": kwargs.get('feedurl')})
-        log.msg("Received Site from Database:" + self.site, level=log.INFO)
+        self.source = self.site['feedurl']
+        
+        if self.site['last_crawled'] is None:
+            self.last_crawled = datetime.now() - monthdelta.MonthDelta(12)
+        else:
+            self.last_crawled = self.site['last_crawled']
+            
+        log.msg("Received Site from Database:" + str(self.site), level=log.INFO)
         
         hosts = json.load(open(musiccrawler.settings.HOSTS_FILE_PATH))
         decrypters = json.load(open(musiccrawler.settings.DECRYPTER_FILE_PATH))
-        regex_group_count = 40
+        regex_group_count = 35
         self.regexes = []
         
         self.start_urls = [self.site['feedurl']];
@@ -70,51 +77,54 @@ class FeedSpider(BaseSpider):
                     if (datetime.now() - monthdelta.MonthDelta(3)) < datetime.fromtimestamp(mktime(rssFeed.get('updated_parsed', ''))):
                         log.msg(("Verarbeite Feed:" + rssFeed.get('title', response.url)), level=log.INFO)
                         if (datetime.now() - monthdelta.MonthDelta(2)) < datetime.fromtimestamp(mktime(entry.get('published_parsed', ''))):
-                            log.msg(("Verarbeite Eintrag:" + entry.get('title', "unnamed entry")), level=log.DEBUG)
-                            for regexpr in self.regexes:
-                                if 'summary' in entry:
-                                    iterator = regexpr.finditer(str(entry.summary))
-                                    for match in iterator:
-                                        linkitem = DownloadLinkItem()
-                                        linkitem['url'] = match.group().split('" ')[0]
-                                        linkitem['source'] = self.start_urls[0]
-                                        if entry.get('published_parsed',None) is None:
-                                            linkitem['date_published'] = datetime.now()
-                                        else:
-                                            linkitem['date_published'] = datetime.fromtimestamp(mktime(entry.get('published_parsed')))
-                                        linkitem['date_discovered'] = datetime.now()
-                                        yield linkitem
-                                if 'content' in entry:
-                                    iterator = regexpr.finditer(str(entry.content))
-                                    for match in iterator:
-                                        linkitem = DownloadLinkItem()
-                                        linkitem['url'] = match.group().split('" ')[0]
-                                        linkitem['source'] = self.start_urls[0]
-                                        if entry.get('published_parsed',None) is None:
-                                            linkitem['date_published'] = datetime.now()
-                                        else:
-                                            linkitem['date_published'] = datetime.fromtimestamp(mktime(entry.get('published_parsed')))
-                                        linkitem['date_discovered'] = datetime.now()
-                                        yield linkitem
-                                if 'links' in entry:
-                                    iterator = regexpr.finditer(str(entry.links))
-                                    for match in iterator:
-                                        linkitem = DownloadLinkItem()
-                                        linkitem['url'] = match.group().split('" ')[0]
-                                        linkitem['source'] = self.start_urls[0]
-                                        if entry.get('published_parsed',None) is None:
-                                            linkitem['date_published'] = datetime.now()
-                                        else:
-                                            linkitem['date_published'] = datetime.fromtimestamp(mktime(entry.get('published_parsed')))
-                                        linkitem['date_discovered'] = datetime.now()
-                                        yield linkitem
-                            for link in entry.links:
-                                request = Request(url=unicode(link.href),callback=self.parse_entry_html)
-                                if entry.get('published_parsed',None) is None:
-                                    request.meta['date_published'] = datetime.now()
-                                else:
-                                    request.meta['date_published'] = datetime.fromtimestamp(mktime(entry.get('published_parsed')))
-                                yield request 
+                            if self.last_crawled < datetime.fromtimestamp(mktime(entry.get('published_parsed', ''))):
+                                log.msg(("Verarbeite Eintrag:" + entry.get('title', "unnamed entry")), level=log.DEBUG)
+                                for regexpr in self.regexes:
+                                    if 'summary' in entry:
+                                        iterator = regexpr.finditer(str(entry.summary))
+                                        for match in iterator:
+                                            linkitem = DownloadLinkItem()
+                                            linkitem['url'] = match.group().split('" ')[0]
+                                            linkitem['source'] = self.start_urls[0]
+                                            if entry.get('published_parsed',None) is None:
+                                                linkitem['date_published'] = datetime.now()
+                                            else:
+                                                linkitem['date_published'] = datetime.fromtimestamp(mktime(entry.get('published_parsed')))
+                                            linkitem['date_discovered'] = datetime.now()
+                                            yield linkitem
+                                    if 'content' in entry:
+                                        iterator = regexpr.finditer(str(entry.content))
+                                        for match in iterator:
+                                            linkitem = DownloadLinkItem()
+                                            linkitem['url'] = match.group().split('" ')[0]
+                                            linkitem['source'] = self.start_urls[0]
+                                            if entry.get('published_parsed',None) is None:
+                                                linkitem['date_published'] = datetime.now()
+                                            else:
+                                                linkitem['date_published'] = datetime.fromtimestamp(mktime(entry.get('published_parsed')))
+                                            linkitem['date_discovered'] = datetime.now()
+                                            yield linkitem
+                                    if 'links' in entry:
+                                        iterator = regexpr.finditer(str(entry.links))
+                                        for match in iterator:
+                                            linkitem = DownloadLinkItem()
+                                            linkitem['url'] = match.group().split('" ')[0]
+                                            linkitem['source'] = self.start_urls[0]
+                                            if entry.get('published_parsed',None) is None:
+                                                linkitem['date_published'] = datetime.now()
+                                            else:
+                                                linkitem['date_published'] = datetime.fromtimestamp(mktime(entry.get('published_parsed')))
+                                            linkitem['date_discovered'] = datetime.now()
+                                            yield linkitem
+                                for link in entry.links:
+                                    request = Request(url=unicode(link.href),callback=self.parse_entry_html)
+                                    if entry.get('published_parsed',None) is None:
+                                        request.meta['date_published'] = datetime.now()
+                                    else:
+                                        request.meta['date_published'] = datetime.fromtimestamp(mktime(entry.get('published_parsed')))
+                                    yield request
+                            else:
+                                log.msg(("Feed-Entry was already spidered at last run:" + entry.get('title', "unnamed entry")), level=log.DEBUG)  
                         else:
                             log.msg(("Feed-Entry is older than 2 month:" + entry.get('title', "unnamed entry")), level=log.DEBUG)  
                     else:
