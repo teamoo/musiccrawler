@@ -80,6 +80,14 @@ class DuplicateURLsPipeline(object):
             self.urls_seen.add(item['url'])
             return item
         
+class BadFilesPipeline(object):
+    def process_item(self, item, spider):
+        if str(item['url']).endswith(".jpg"):
+            log.msg(("Bad Item:" + str(item)), level=log.DEBUG)
+            raise DropItem("Bad Link-URL found: %s" % item['url'])
+        else:
+            return item
+        
 class SOAPWSExportPipeline(object):
     def __init__(self):
         self.exporter = SOAPWSExporter();

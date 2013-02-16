@@ -26,7 +26,7 @@ class MongoDBExporter(BaseItemExporter):
     export_empty_fields = True
 
     def __init__(self):
-        connection = pymongo.Connection(musiccrawler.settings.MONGODB_SERVER, musiccrawler.settings.MONGODB_PORT)
+        connection = pymongo.Connection(musiccrawler.settings.MONGODB_SERVER, musiccrawler.settings.MONGODB_PORT,tz_aware=True)
         self.db = connection[musiccrawler.settings.MONGODB_DB]
         log.msg("Authenticating to MongoDB", level=log.DEBUG)
         self.db.authenticate(musiccrawler.settings.MONGODB_USER, musiccrawler.settings.MONGODB_PASSWORD)

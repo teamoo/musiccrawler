@@ -27,3 +27,5 @@ dist
 *.db
 
 *.db
+
+musiccrawler/settings.py

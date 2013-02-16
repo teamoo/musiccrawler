@@ -18,7 +18,7 @@ class FacebookGroupSpider(BaseSpider):
     def __init__(self, **kwargs):
         log.msg("Initializing Spider", level=log.INFO)
         dispatcher.connect(self.handle_spider_closed, signals.spider_closed)
-        connection = pymongo.Connection(musiccrawler.settings.MONGODB_SERVER, musiccrawler.settings.MONGODB_PORT)
+        connection = pymongo.Connection(musiccrawler.settings.MONGODB_SERVER, musiccrawler.settings.MONGODB_PORT,tz_aware=True)
         self.db = connection[musiccrawler.settings.MONGODB_DB]
         self.db.authenticate(musiccrawler.settings.MONGODB_USER, musiccrawler.settings.MONGODB_PASSWORD)
         self.collection = self.db['sites']
