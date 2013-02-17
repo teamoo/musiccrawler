@@ -23,6 +23,7 @@ import os
 import sys
 import pymongo
 import re
+import pkgutil
 
 
 class FeedSpider(BaseSpider):        
@@ -45,8 +46,8 @@ class FeedSpider(BaseSpider):
             
         log.msg("Received Site from Database:" + str(self.site), level=log.INFO)
         
-        hosts = json.load(get_data_smart("spiders", "hosts.json", as_string=True))
-        decrypters = json.load(get_data_smart("spiders", "decrypter.json", as_string=True))
+        hosts = json.load(pkgutil.get_data("spiders","hosts.json"))
+        decrypters = json.load(pkgutil.get_data("spiders","decrypter.json"))
         regex_group_count = 35
         self.regexes = []
         
