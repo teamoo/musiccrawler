@@ -46,8 +46,8 @@ class FeedSpider(BaseSpider):
             
         log.msg("Received Site from Database:" + str(self.site), level=log.INFO)
         
-        hosts = json.loads(pkgutil.get_data("spiders","hosts.json"))
-        decrypters = json.loads(pkgutil.get_data("spiders","decrypter.json"))
+        hosts = json.load(open(musiccrawler.settings.HOSTS_FILE_PATH))
+        decrypters = json.load(open(musiccrawler.settings.DECRYPTERS_FILE_PATH))
         regex_group_count = 35
         self.regexes = []
         
@@ -74,14 +74,15 @@ class FeedSpider(BaseSpider):
             rssFeed = feedparser.parse(response.url)
             
             if rssFeed.bozo == 1:
-                log.msg(("Feed kann nicht verarbeitet werden:" + str(response.url)), level=log.WARNING)     
+                log.msg(("Feed kann nicht verarbeitet werden:" + str(response.url)), level=log.WARNING)
+                self.collection.update({"feedurl" : self.source},{"$set" : {"active" : False}})     
             else:
                 for entry in rssFeed.entries:
                     if (datetime.now() - monthdelta.MonthDelta(3)) < datetime.fromtimestamp(mktime(rssFeed.get('updated_parsed', ''))):
                         log.msg(("Verarbeite Feed:" + rssFeed.get('title', response.url)), level=log.INFO)
                         if (datetime.now() - monthdelta.MonthDelta(2)) < datetime.fromtimestamp(mktime(entry.get('published_parsed', ''))):
                             if self.last_crawled < datetime.fromtimestamp(mktime(entry.get('published_parsed', ''))):
-                                log.msg(("Verarbeite Eintrag:" + entry.get('title', "unnamed entry")), level=log.DEBUG)
+                                log.msg(("Verarbeite Eintrag:" + entry.get('title', "unnamed entry")), level=log.INFO)
                                 for regexpr in self.regexes:
                                     if 'summary' in entry:
                                         iterator = regexpr.finditer(str(entry.summary))
@@ -127,9 +128,9 @@ class FeedSpider(BaseSpider):
                                         request.meta['date_published'] = datetime.fromtimestamp(mktime(entry.get('published_parsed')))
                                     yield request
                             else:
-                                log.msg(("Feed-Entry was already spidered at last run:" + entry.get('title', "unnamed entry")), level=log.DEBUG)  
+                                log.msg(("Feed-Entry was already spidered at last run:" + entry.get('title', "unnamed entry")), level=log.INFO)  
                         else:
-                            log.msg(("Feed-Entry is older than 2 month:" + entry.get('title', "unnamed entry")), level=log.DEBUG)  
+                            log.msg(("Feed-Entry is older than 2 month:" + entry.get('title', "unnamed entry")), level=log.INFO)  
                     else:
                         log.msg(("Feed has not been updated within 3 months:" + entry.get('title', "unnamed entry")) + ", DEACTIVATING FEED!", level=log.WARNING)
                         self.collection.update({"feedurl" : self.source},{"$set" : {"active" : False}})

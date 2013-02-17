@@ -32,8 +32,8 @@ class FacebookGroupSpider(BaseSpider):
         #TODO das muss noch bereinigt werden, die Gruppennummer aus dem Link holen
         self.start_urls = ["https://graph.facebook.com/137328326321645/feed?access_token=" + accesstoken]
         
-        hosts = json.load(open(get_data_smart("spiders", "hosts.json", as_string=False)))
-        decrypters = json.load(open(get_data_smart("spiders", "decrypter.json", as_string=False)))
+        hosts = json.load(open(musiccrawler.settings.HOSTS_FILE_PATH))
+        decrypters = json.load(open(musiccrawler.settings.DECRYPTERS_FILE_PATH))
         regex_group_count = 40
         self.regexes = []
 
