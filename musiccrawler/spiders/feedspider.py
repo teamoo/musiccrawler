@@ -9,7 +9,7 @@
 from datetime import datetime
 from musiccrawler.items import DownloadLinkItem
 from pkgutil import get_loader
-from scrapy import log, signals
+from scrapy import log, signals, stats
 from scrapy.http import Request
 from scrapy.spider import BaseSpider
 from scrapy.xlib.pydispatch import dispatcher
@@ -24,6 +24,7 @@ import sys
 import pymongo
 import re
 import pkgutil
+from scrapy.contrib.webservice import crawler
 
 
 class FeedSpider(BaseSpider):        
@@ -38,6 +39,7 @@ class FeedSpider(BaseSpider):
         self.collection = self.db['sites']
         self.site = self.collection.find_one({"feedurl": kwargs.get('feedurl')})
         self.source = self.site['feedurl']
+        self.stats = stats
         
         if self.site['last_crawled'] is None:
             self.last_crawled = datetime.now() - monthdelta.MonthDelta(12)
@@ -78,10 +80,11 @@ class FeedSpider(BaseSpider):
                 self.collection.update({"feedurl" : self.source},{"$set" : {"active" : False}})     
             else:
                 for entry in rssFeed.entries:
-                    if (datetime.now() - monthdelta.MonthDelta(3)) < datetime.fromtimestamp(mktime(rssFeed.get('updated_parsed', ''))):
+                    #TODO: wenn die Umwandlung zum Datum nicht klappt, weiter machen
+                    if (datetime.now() - monthdelta.MonthDelta(3)) < datetime.fromtimestamp(mktime(rssFeed.get('updated_parsed', datetime.now() - monthdelta.MonthDelta(2)))):
                         log.msg(("Verarbeite Feed:" + rssFeed.get('title', response.url)), level=log.INFO)
-                        if (datetime.now() - monthdelta.MonthDelta(2)) < datetime.fromtimestamp(mktime(entry.get('published_parsed', ''))):
-                            if self.last_crawled < datetime.fromtimestamp(mktime(entry.get('published_parsed', ''))):
+                        if (datetime.now() - monthdelta.MonthDelta(2)) < datetime.fromtimestamp(mktime(entry.get('published_parsed', datetime.now() - monthdelta.MonthDelta(1)))):
+                            if self.last_crawled < datetime.fromtimestamp(mktime(entry.get('published_parsed', datetime.now() - monthdelta.MonthDelta(1)))):
                                 log.msg(("Verarbeite Eintrag:" + entry.get('title', "unnamed entry")), level=log.INFO)
                                 for regexpr in self.regexes:
                                     if 'summary' in entry:
@@ -148,6 +151,7 @@ class FeedSpider(BaseSpider):
                 
     def handle_spider_closed(self, spider, reason):
         if reason == "finished":
+            print self.stats.get_value("items_dropped_count");
             self.collection.update({"feedurl" : self.source},{"$set" : {"last_crawled" : datetime.now(), "next_crawl" : None}})
             
 def get_data_smart(package, resource, as_string=True):
