@@ -6,24 +6,23 @@
 #
 # -Sid
 
-from scrapy.spider import BaseSpider
-from scrapy import log
-from scrapy import signals
-from scrapy.xlib.pydispatch import dispatcher
-from pkgutil import get_loader
 from datetime import datetime
-from time import mktime
 from musiccrawler.items import DownloadLinkItem
+from pkgutil import get_loader
+from scrapy import log, signals
 from scrapy.http import Request
-import os, sys
-import pymongo
+from scrapy.spider import BaseSpider
+from scrapy.xlib.pydispatch import dispatcher
+from time import mktime
 import feedparser
-import re
 import json
 import math
-import musiccrawler.settings
 import monthdelta
-import pkgutil
+import musiccrawler.settings
+import os
+import sys
+import pymongo
+import re
 
 
 class FeedSpider(BaseSpider):        
@@ -46,8 +45,8 @@ class FeedSpider(BaseSpider):
             
         log.msg("Received Site from Database:" + str(self.site), level=log.INFO)
         
-        hosts = json.load(open(get_data_smart("spiders", "hosts.json", as_string=False)))
-        decrypters = json.load(open(get_data_smart("spiders", "decrypter.json", as_string=False)))
+        hosts = json.load(get_data_smart("spiders", "hosts.json", as_string=True))
+        decrypters = json.load(get_data_smart("spiders", "decrypter.json", as_string=True))
         regex_group_count = 35
         self.regexes = []
         
