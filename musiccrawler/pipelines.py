@@ -9,7 +9,6 @@ from py4j.java_gateway import logging
 from scrapy.exceptions import DropItem
 from scrapy import signals
 from musiccrawler.exporters import SOAPWSExporter
-from musiccrawler.exporters import RESTWSExporter
 from musiccrawler.exporters import MongoDBExporter
 from scrapy import log
 import re
@@ -79,10 +78,32 @@ class DuplicateURLsPipeline(object):
             log.msg(("new Item:" + str(item)), level=log.DEBUG)
             self.urls_seen.add(item['url'])
             return item
+
+class CleanURLPipeline(object):
+    def process_item(self, item, spider):
+        url = str(item['url'])
+        item['url'] = str(url.split('" ')[0].split('\n')[0]).rstrip().lstrip()
+        
+        return item
+
+class CleanNamePipeline(object):
+    def __init__(self):
+        self.badadditions = ["[exclusive-music-dj.com]"]
+
+    def process_item(self, item, spider):
+        name = str(item['name'])
+        
+        for badtag in self.badadditions:
+            name = name.replace(badtag,"")
+            name = name.rstrip().lstrip()
+        
+        item['name'] = name
+        
+        return item
         
 class BadFilesPipeline(object):
     def process_item(self, item, spider):
-        if str(item['url']).endswith(".jpg"):
+        if str(item['url']).endswith(".jpg") or str(item['url']).endswith(".png") or str(item['url']).endswith(".gif"):
             log.msg(("Bad Item:" + str(item)), level=log.DEBUG)
             raise DropItem("Bad Link-URL found: %s" % item['url'])
         else:

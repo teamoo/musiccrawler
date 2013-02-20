@@ -23,9 +23,6 @@ import os
 import sys
 import pymongo
 import re
-import pkgutil
-from scrapy.contrib.webservice import crawler
-
 
 class FeedSpider(BaseSpider):        
     name = "feedspider"
@@ -91,7 +88,7 @@ class FeedSpider(BaseSpider):
                                         iterator = regexpr.finditer(str(entry.summary))
                                         for match in iterator:
                                             linkitem = DownloadLinkItem()
-                                            linkitem['url'] = match.group().split('" ')[0]
+                                            linkitem['url'] = match.group()
                                             linkitem['source'] = self.start_urls[0]
                                             if entry.get('published_parsed',None) is None:
                                                 linkitem['date_published'] = datetime.now()
@@ -103,7 +100,7 @@ class FeedSpider(BaseSpider):
                                         iterator = regexpr.finditer(str(entry.content))
                                         for match in iterator:
                                             linkitem = DownloadLinkItem()
-                                            linkitem['url'] = match.group().split('" ')[0]
+                                            linkitem['url'] = match.group()
                                             linkitem['source'] = self.start_urls[0]
                                             if entry.get('published_parsed',None) is None:
                                                 linkitem['date_published'] = datetime.now()
@@ -115,7 +112,7 @@ class FeedSpider(BaseSpider):
                                         iterator = regexpr.finditer(str(entry.links))
                                         for match in iterator:
                                             linkitem = DownloadLinkItem()
-                                            linkitem['url'] = match.group().split('" ')[0]
+                                            linkitem['url'] = match.group()
                                             linkitem['source'] = self.start_urls[0]
                                             if entry.get('published_parsed',None) is None:
                                                 linkitem['date_published'] = datetime.now()
@@ -143,7 +140,7 @@ class FeedSpider(BaseSpider):
             iterator = regexpr.finditer(response.body)
             for match in iterator:
                 linkitem = DownloadLinkItem()
-                linkitem['url'] = match.group().split('" ')[0]
+                linkitem['url'] = match.group()
                 linkitem['source'] = self.start_urls[0]
                 linkitem['date_published'] = response.meta['date_published']
                 linkitem['date_discovered'] = datetime.now()

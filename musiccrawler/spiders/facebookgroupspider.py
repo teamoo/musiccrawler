@@ -27,36 +27,41 @@ class FacebookGroupSpider(BaseSpider):
         self.site = self.collection.find_one({"feedurl": kwargs.get('feedurl')})
         log.msg("Received Site from Database:" + str(self.site), level=log.INFO)
         self.source = self.site['feedurl']
+        self.groupid = self.site['groupid']
         
         accesstoken = self.site['accesstoken']
-        #TODO das muss noch bereinigt werden, die Gruppennummer aus dem Link holen
-        self.start_urls = ["https://graph.facebook.com/137328326321645/feed?access_token=" + accesstoken]
         
-        hosts = json.load(open(musiccrawler.settings.HOSTS_FILE_PATH))
-        decrypters = json.load(open(musiccrawler.settings.DECRYPTERS_FILE_PATH))
-        regex_group_count = 40
-        self.regexes = []
-
-        for i in range(int(math.ceil(len(hosts) / regex_group_count))):
+        if accesstoken is None:
+            self.collection.update({"feedurl" : self.source},{"$set" : {"active" : False}})
+            log.msg("Access Token is not set, spider cannot crawl.", level=log.ERROR);
+        else:
+            self.start_urls = ["https://graph.facebook.com/" + self.groupid + "/feed?access_token=" + accesstoken]                
             
-            hosterregex = ''
+            hosts = json.load(open(musiccrawler.settings.HOSTS_FILE_PATH))
+            decrypters = json.load(open(musiccrawler.settings.DECRYPTERS_FILE_PATH))
+            regex_group_count = 40
+            self.regexes = []
     
-            for hoster in hosts[(i + 1) * regex_group_count - regex_group_count:(i + 1) * regex_group_count]:
-                hosterpattern = unicode(hoster['pattern']).rstrip('\r\n').replace("/", "\/",99).replace(":", "\:",99).replace("\d+{", "\d{",10).replace("++", "+",10).replace("\r\n", "",10).replace("|[\p{L}\w-%]+\/[\p{L}\w-%]+", "",10).replace("decrypted","",10).replace("httpJDYoutube","http",10) + '|'
-                hosterregex += hosterpattern.encode('utf-8')
-            
-            self.regexes.append(re.compile("'" + hosterregex[:-1] + "'", re.IGNORECASE))
-            
-        for i in range(int(math.ceil(len(decrypters) / regex_group_count))):
-            
-            hosterregex = ''
-    
-            for decrypter in decrypters[(i + 1) * regex_group_count - regex_group_count:(i + 1) * regex_group_count]:
-                hosterpattern = unicode(decrypter['pattern']).rstrip('\r\n') + '|'
-                hosterregex += hosterpattern.encode('utf-8')
-            self.regexes.append(re.compile("\"" + hosterregex[:-1] + "\"", re.IGNORECASE))
+            for i in range(int(math.ceil(len(hosts) / regex_group_count))):
+                
+                hosterregex = ''
         
-        log.msg("Spider initialized.", level=log.INFO)
+                for hoster in hosts[(i + 1) * regex_group_count - regex_group_count:(i + 1) * regex_group_count]:
+                    hosterpattern = unicode(hoster['pattern']).rstrip('\r\n').replace("/", "\/",99).replace(":", "\:",99).replace("\d+{", "\d{",10).replace("++", "+",10).replace("\r\n", "",10).replace("|[\p{L}\w-%]+\/[\p{L}\w-%]+", "",10).replace("decrypted","",10).replace("httpJDYoutube","http",10) + '|'
+                    hosterregex += hosterpattern.encode('utf-8')
+                
+                self.regexes.append(re.compile("'" + hosterregex[:-1] + "'", re.IGNORECASE))
+                
+            for i in range(int(math.ceil(len(decrypters) / regex_group_count))):
+                
+                hosterregex = ''
+        
+                for decrypter in decrypters[(i + 1) * regex_group_count - regex_group_count:(i + 1) * regex_group_count]:
+                    hosterpattern = unicode(decrypter['pattern']).rstrip('\r\n') + '|'
+                    hosterregex += hosterpattern.encode('utf-8')
+                self.regexes.append(re.compile("\"" + hosterregex[:-1] + "\"", re.IGNORECASE))
+            
+            log.msg("Spider initialized.", level=log.INFO)
                 
     def parse(self, response):
         groupfeed = json.loads(response.body)
@@ -69,7 +74,7 @@ class FacebookGroupSpider(BaseSpider):
                     iterator = regexpr.finditer(str(item['message']))
                     for match in iterator:
                         linkitem = DownloadLinkItem()
-                        linkitem['url'] = match.group().split('" ')[0].split('\n')[0]
+                        linkitem['url'] = match.group()
                         linkitem['source'] = str(self.source)
                         linkitem['creator'] = item['from']['id']
                         linkitem['date_published'] = parse(item['created_time'])
@@ -80,7 +85,7 @@ class FacebookGroupSpider(BaseSpider):
                     iterator = regexpr.finditer(str(item['message']))
                     for match in iterator:
                         linkitem = DownloadLinkItem()
-                        linkitem['url'] = match.group().split('" ')[0].split('\n')[0]
+                        linkitem['url'] = match.group()
                         linkitem['source'] = str(self.source)
                         linkitem['creator'] = item['from']['id']
                         linkitem['date_published'] = parse(item['created_time'])
@@ -91,7 +96,7 @@ class FacebookGroupSpider(BaseSpider):
                     iterator = regexpr.finditer(str(item['message']))
                     for match in iterator:
                         linkitem = DownloadLinkItem()
-                        linkitem['url'] = match.group().split('" ')[0].split('\n')[0]
+                        linkitem['url'] = match.group()
                         linkitem['source'] = str(self.source)
                         linkitem['creator'] = item['from']['id']
                         linkitem['date_published'] = parse(item['created_time'])
@@ -104,7 +109,7 @@ class FacebookGroupSpider(BaseSpider):
                             iterator = regexpr.finditer(str(item['message']))
                             for match in iterator:
                                 linkitem = DownloadLinkItem()
-                                linkitem['url'] = match.group().split('" ')[0].split('\n')[0]
+                                linkitem['url'] = match.group()
                                 linkitem['source'] = str(self.source)
                                 linkitem['creator'] = comment['from']['id']
                                 linkitem['date_published'] = parse(comment['created_time'])
