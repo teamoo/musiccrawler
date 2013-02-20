@@ -28,14 +28,17 @@ class FacebookGroupSpider(BaseSpider):
         log.msg("Received Site from Database:" + str(self.site), level=log.INFO)
         self.source = self.site['feedurl']
         self.groupid = self.site['groupid']
+        self.active = self.site['active']
         
-        accesstoken = self.site['accesstoken']
+        self.accesstoken = self.site['accesstoken']
         
-        if accesstoken is None:
+        if self.active == False:
+            log.msg("Site is deactivated, not crawling.", level=log.ERROR);
+        elif self.accesstoken is None:
             self.collection.update({"feedurl" : self.source},{"$set" : {"active" : False}})
             log.msg("Access Token is not set, spider cannot crawl.", level=log.ERROR);
         else:
-            self.start_urls = ["https://graph.facebook.com/" + self.groupid + "/feed?access_token=" + accesstoken]                
+            self.start_urls = ["https://graph.facebook.com/" + self.groupid + "/feed?access_token=" + self.accesstoken]                
             
             hosts = json.load(open(musiccrawler.settings.HOSTS_FILE_PATH))
             decrypters = json.load(open(musiccrawler.settings.DECRYPTERS_FILE_PATH))
@@ -64,57 +67,58 @@ class FacebookGroupSpider(BaseSpider):
             log.msg("Spider initialized.", level=log.INFO)
                 
     def parse(self, response):
-        groupfeed = json.loads(response.body)
-        
-        feed = groupfeed['data']
-        
-        for item in feed:
-            if 'message' in item:
-                for regexpr in self.regexes:
-                    iterator = regexpr.finditer(str(item['message']))
-                    for match in iterator:
-                        linkitem = DownloadLinkItem()
-                        linkitem['url'] = match.group()
-                        linkitem['source'] = str(self.source)
-                        linkitem['creator'] = item['from']['id']
-                        linkitem['date_published'] = parse(item['created_time'])
-                        linkitem['date_discovered'] = datetime.now()
-                        yield linkitem   
-            if 'source' in item:
-                for regexpr in self.regexes:
-                    iterator = regexpr.finditer(str(item['message']))
-                    for match in iterator:
-                        linkitem = DownloadLinkItem()
-                        linkitem['url'] = match.group()
-                        linkitem['source'] = str(self.source)
-                        linkitem['creator'] = item['from']['id']
-                        linkitem['date_published'] = parse(item['created_time'])
-                        linkitem['date_discovered'] = datetime.now()
-                        yield linkitem   
-            if 'link' in item:
-                for regexpr in self.regexes:
-                    iterator = regexpr.finditer(str(item['message']))
-                    for match in iterator:
-                        linkitem = DownloadLinkItem()
-                        linkitem['url'] = match.group()
-                        linkitem['source'] = str(self.source)
-                        linkitem['creator'] = item['from']['id']
-                        linkitem['date_published'] = parse(item['created_time'])
-                        linkitem['date_discovered'] = datetime.now()
-                        yield linkitem   
-            if 'comments' in item:
-                for comment in item['comments']:
-                    if 'message' in comment:
-                        for regexpr in self.regexes:
-                            iterator = regexpr.finditer(str(item['message']))
-                            for match in iterator:
-                                linkitem = DownloadLinkItem()
-                                linkitem['url'] = match.group()
-                                linkitem['source'] = str(self.source)
-                                linkitem['creator'] = comment['from']['id']
-                                linkitem['date_published'] = parse(comment['created_time'])
-                                linkitem['date_discovered'] = datetime.now()
-                                yield linkitem
+        if self.active == True and self.accesstoken is not None:
+            groupfeed = json.loads(response.body)
+            
+            feed = groupfeed['data']
+            
+            for item in feed:
+                if 'message' in item:
+                    for regexpr in self.regexes:
+                        iterator = regexpr.finditer(str(item['message']))
+                        for match in iterator:
+                            linkitem = DownloadLinkItem()
+                            linkitem['url'] = match.group()
+                            linkitem['source'] = str(self.source)
+                            linkitem['creator'] = item['from']['id']
+                            linkitem['date_published'] = parse(item['created_time'])
+                            linkitem['date_discovered'] = datetime.now()
+                            yield linkitem   
+                if 'source' in item:
+                    for regexpr in self.regexes:
+                        iterator = regexpr.finditer(str(item['message']))
+                        for match in iterator:
+                            linkitem = DownloadLinkItem()
+                            linkitem['url'] = match.group()
+                            linkitem['source'] = str(self.source)
+                            linkitem['creator'] = item['from']['id']
+                            linkitem['date_published'] = parse(item['created_time'])
+                            linkitem['date_discovered'] = datetime.now()
+                            yield linkitem   
+                if 'link' in item:
+                    for regexpr in self.regexes:
+                        iterator = regexpr.finditer(str(item['message']))
+                        for match in iterator:
+                            linkitem = DownloadLinkItem()
+                            linkitem['url'] = match.group()
+                            linkitem['source'] = str(self.source)
+                            linkitem['creator'] = item['from']['id']
+                            linkitem['date_published'] = parse(item['created_time'])
+                            linkitem['date_discovered'] = datetime.now()
+                            yield linkitem   
+                if 'comments' in item:
+                    for comment in item['comments']:
+                        if 'message' in comment:
+                            for regexpr in self.regexes:
+                                iterator = regexpr.finditer(str(item['message']))
+                                for match in iterator:
+                                    linkitem = DownloadLinkItem()
+                                    linkitem['url'] = match.group()
+                                    linkitem['source'] = str(self.source)
+                                    linkitem['creator'] = comment['from']['id']
+                                    linkitem['date_published'] = parse(comment['created_time'])
+                                    linkitem['date_discovered'] = datetime.now()
+                                    yield linkitem
                                 
     def handle_spider_closed(self, spider, reason):
         if reason == "finished":

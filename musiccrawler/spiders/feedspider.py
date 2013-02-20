@@ -36,7 +36,7 @@ class FeedSpider(BaseSpider):
         self.collection = self.db['sites']
         self.site = self.collection.find_one({"feedurl": kwargs.get('feedurl')})
         self.source = self.site['feedurl']
-        self.stats = stats
+        self.active = self.site['active']
         
         if self.site['last_crawled'] is None:
             self.last_crawled = datetime.now() - monthdelta.MonthDelta(12)
@@ -45,31 +45,35 @@ class FeedSpider(BaseSpider):
             
         log.msg("Received Site from Database:" + str(self.site), level=log.INFO)
         
-        hosts = json.load(open(musiccrawler.settings.HOSTS_FILE_PATH))
-        decrypters = json.load(open(musiccrawler.settings.DECRYPTERS_FILE_PATH))
-        regex_group_count = 35
-        self.regexes = []
-        
-        self.start_urls = [self.site['feedurl']];
-        
-        for i in range(int(math.ceil(len(hosts) / regex_group_count))):
-            hosterregex = ''
-    
-            for hoster in hosts[(i + 1) * regex_group_count - regex_group_count:(i + 1) * regex_group_count]:
-                hosterpattern = unicode(hoster['pattern']).rstrip('\r\n').replace("/", "\/",99).replace(":", "\:",99).replace("\d+{", "\d{",10).replace("++", "+",10).replace("\r\n", "",10).replace("|[\p{L}\w-%]+\/[\p{L}\w-%]+", "",10).replace("decrypted","",10).replace("httpJDYoutube","http",10) + '|'
-                hosterregex += hosterpattern.encode('utf-8')
+        if self.active == False:
+            log.msg("Site is deactivated, not crawling.", level=log.ERROR);
+        else:
+            hosts = json.load(open(musiccrawler.settings.HOSTS_FILE_PATH))
+            decrypters = json.load(open(musiccrawler.settings.DECRYPTERS_FILE_PATH))
+            regex_group_count = 35
+            self.regexes = []
             
-            self.regexes.append(re.compile("'" + hosterregex[:-1] + "'", re.IGNORECASE))
+            self.start_urls = [self.site['feedurl']];
             
-        for i in range(int(math.ceil(len(decrypters) / regex_group_count))):
-            hosterregex = ''
-    
-            for decrypter in decrypters[(i + 1) * regex_group_count - regex_group_count:(i + 1) * regex_group_count]:
-                hosterpattern = unicode(decrypter['pattern']).rstrip('\r\n') + '|'
-                hosterregex += hosterpattern.encode('utf-8')
-            self.regexes.append(re.compile("\"" + hosterregex[:-1] + "\"", re.IGNORECASE))
+            for i in range(int(math.ceil(len(hosts) / regex_group_count))):
+                hosterregex = ''
+        
+                for hoster in hosts[(i + 1) * regex_group_count - regex_group_count:(i + 1) * regex_group_count]:
+                    hosterpattern = unicode(hoster['pattern']).rstrip('\r\n').replace("/", "\/",99).replace(":", "\:",99).replace("\d+{", "\d{",10).replace("++", "+",10).replace("\r\n", "",10).replace("|[\p{L}\w-%]+\/[\p{L}\w-%]+", "",10).replace("decrypted","",10).replace("httpJDYoutube","http",10) + '|'
+                    hosterregex += hosterpattern.encode('utf-8')
+                
+                self.regexes.append(re.compile("'" + hosterregex[:-1] + "'", re.IGNORECASE))
+                
+            for i in range(int(math.ceil(len(decrypters) / regex_group_count))):
+                hosterregex = ''
+        
+                for decrypter in decrypters[(i + 1) * regex_group_count - regex_group_count:(i + 1) * regex_group_count]:
+                    hosterpattern = unicode(decrypter['pattern']).rstrip('\r\n') + '|'
+                    hosterregex += hosterpattern.encode('utf-8')
+                self.regexes.append(re.compile("\"" + hosterregex[:-1] + "\"", re.IGNORECASE))
                 
     def parse(self, response):
+        if self.active == True:
             rssFeed = feedparser.parse(response.url)
             
             if rssFeed.bozo == 1:
