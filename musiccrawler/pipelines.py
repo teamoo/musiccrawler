@@ -85,21 +85,6 @@ class CleanURLPipeline(object):
         item['url'] = str(url.split('" ')[0].split('\n')[0]).rstrip().lstrip()
         
         return item
-
-class CleanNamePipeline(object):
-    def __init__(self):
-        self.badadditions = ["[exclusive-music-dj.com]"]
-
-    def process_item(self, item, spider):
-        name = str(item['name'])
-        
-        for badtag in self.badadditions:
-            name = name.replace(badtag,"")
-            name = name.rstrip().lstrip()
-        
-        item['name'] = name
-        
-        return item
         
 class BadFilesPipeline(object):
     def process_item(self, item, spider):
