@@ -32,13 +32,9 @@ ITEM_PIPELINES = [
     'musiccrawler.pipelines.MongoDBExportPipeline'
 ]
 
-FEED_EXPORTERS= {
-                  'mcmongo': 'musiccrawler.exporters.MongoDBExporter'
-}
+FEED_EXPORTERS= {'mcmongo':'musiccrawler.exporters.MongoDBExporter','test':'musiccrawler.exporters.RESTWSExporter'}
 
-SPIDER_CONTRACTS = [
-
-]
+SPIDER_CONTRACTS = []
 
 WSDL_FILE = 'http://musiclink.webcomsult.de/v2/index.php?wsdl'
 REST_API_URL = 'http://musiclink.webcomsult.de/v2/rest.php'
