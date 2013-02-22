@@ -50,6 +50,12 @@ class FeedSpider(BaseSpider):
         if self.active == False:
             log.msg("Site is deactivated, not crawling.", level=log.ERROR);
         else:
+            test = pkgutil.get_data('musiccrawler', musiccrawler.settings.HOSTS_FILE_PATH)
+            test2 = pkgutil.get_data('', musiccrawler.settings.HOSTS_FILE_PATH)
+            
+            print test
+            print test2
+            
             hosts = json.loads(pkgutil.get_data('musiccrawler', musiccrawler.settings.HOSTS_FILE_PATH))
             
             decrypters = json.loads(pkgutil.get_data('musiccrawler'.musiccrawler.settings.DECRYPTERS_FILE_PATH))
