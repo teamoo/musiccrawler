@@ -15,17 +15,5 @@ dist
 *.egg-info
 .#.*
 .pydevproject
-
 *.pyc
-
-*.pyc
-
-*.pyc
-
-*.pyc
-
 *.db
-
-*.db
-
-musiccrawler/settings.py
