@@ -23,6 +23,7 @@ import os
 import sys
 import pymongo
 import re
+import pkgutil
 
 class FeedSpider(BaseSpider):        
     name = "feedspider"
@@ -48,8 +49,9 @@ class FeedSpider(BaseSpider):
         if self.active == False:
             log.msg("Site is deactivated, not crawling.", level=log.ERROR);
         else:
-            hosts = json.load(open(musiccrawler.settings.HOSTS_FILE_PATH))
-            decrypters = json.load(open(musiccrawler.settings.DECRYPTERS_FILE_PATH))
+            hosts = json.load(open(pkgutil.get_data('', musiccrawler.settings.HOSTS_FILE_PATH)))
+            
+            decrypters = json.load(open(pkgutil.get_data(''.musiccrawler.settings.DECRYPTERS_FILE_PATH)))
             regex_group_count = 35
             self.regexes = []
             
