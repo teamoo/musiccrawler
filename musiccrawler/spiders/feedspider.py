@@ -24,7 +24,7 @@ import sys
 import pymongo
 import re
 import pkgutil
-import StringIO
+import pkg_resources
 
 class FeedSpider(BaseSpider):        
     name = "feedspider"
@@ -50,6 +50,12 @@ class FeedSpider(BaseSpider):
         if self.active == False:
             log.msg("Site is deactivated, not crawling.", level=log.ERROR);
         else:
+            data = pkg_resources.ResourceManager.resource_filename(self, '', 'hosts.json')
+            print data
+            
+            data2 = pkg_resources.ResourceManager.resource_filename(self, 'musiccrawler', 'hosts.json')
+            print data2
+            
             test = pkgutil.get_data('musiccrawler', 'hosts.json')
             test2 = pkgutil.get_data('', 'decrypters.json')
             

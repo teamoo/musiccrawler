@@ -32,7 +32,7 @@ ITEM_PIPELINES = [
     'musiccrawler.pipelines.MongoDBExportPipeline'
 ]
 
-FEED_EXPORTERS= {'mcmongo':'musiccrawler.exporters.MongoDBExporter','test':'musiccrawler.exporters.RESTWSExporter'}
+FEED_EXPORTERS={'mcmongo':'musiccrawler.exporters.MongoDBExporter'}
 
 SPIDER_CONTRACTS = []
 
