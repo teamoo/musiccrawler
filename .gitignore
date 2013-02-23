@@ -17,3 +17,4 @@ dist
 .pydevproject
 *.pyc
 *.db
+settings.py
