@@ -5,15 +5,14 @@ from scrapy.xlib.pydispatch import dispatcher
 from scrapy.spider import BaseSpider
 from datetime import datetime
 from dateutil.parser import parse
-from pkgutil import get_loader
-import os, sys
+from pytz import timezone
 import pymongo
 import json
 import math
 import musiccrawler.settings
 import re
 import pkg_resources
-
+import monthdelta
 
 class FacebookGroupSpider(BaseSpider):        
     name = "facebookgroupspider"
@@ -30,8 +29,14 @@ class FacebookGroupSpider(BaseSpider):
         self.source = self.site['feedurl']
         self.groupid = str(self.site['groupid'])
         self.active = self.site['active']
-        
         self.accesstoken = self.site['accesstoken']
+        
+        self.tz = timezone("Europe/Berlin")
+        
+        if self.site['last_crawled'] is None:
+            self.last_crawled = self.tz.localize(datetime.now() - monthdelta.MonthDelta(12))
+        else:
+            self.last_crawled = self.site['last_crawled']
         
         if self.active == False:
             log.msg("Site is deactivated, not crawling.", level=log.ERROR);
@@ -78,39 +83,40 @@ class FacebookGroupSpider(BaseSpider):
             feed = groupfeed['data']
             
             for item in feed:
-                if 'message' in item:
-                    for regexpr in self.regexes:
-                        iterator = regexpr.finditer(str(item['message']))
-                        for match in iterator:
-                            linkitem = DownloadLinkItem()
-                            linkitem['url'] = match.group()
-                            linkitem['source'] = str(self.source)
-                            linkitem['creator'] = item['from']['id']
-                            linkitem['date_published'] = parse(item['created_time'])
-                            linkitem['date_discovered'] = datetime.now()
-                            yield linkitem   
-                if 'source' in item:
-                    for regexpr in self.regexes:
-                        iterator = regexpr.finditer(str(item['message']))
-                        for match in iterator:
-                            linkitem = DownloadLinkItem()
-                            linkitem['url'] = match.group()
-                            linkitem['source'] = str(self.source)
-                            linkitem['creator'] = item['from']['id']
-                            linkitem['date_published'] = parse(item['created_time'])
-                            linkitem['date_discovered'] = datetime.now()
-                            yield linkitem   
-                if 'link' in item:
-                    for regexpr in self.regexes:
-                        iterator = regexpr.finditer(str(item['message']))
-                        for match in iterator:
-                            linkitem = DownloadLinkItem()
-                            linkitem['url'] = match.group()
-                            linkitem['source'] = str(self.source)
-                            linkitem['creator'] = item['from']['id']
-                            linkitem['date_published'] = parse(item['created_time'])
-                            linkitem['date_discovered'] = datetime.now()
-                            yield linkitem   
+                if self.last_crawled < parse(item['created_time']):
+                    if 'message' in item:
+                        for regexpr in self.regexes:
+                            iterator = regexpr.finditer(str(item['message']))
+                            for match in iterator:
+                                linkitem = DownloadLinkItem()
+                                linkitem['url'] = match.group()
+                                linkitem['source'] = str(self.source)
+                                linkitem['creator'] = item['from']['id']
+                                linkitem['date_published'] = parse(item['created_time'])
+                                linkitem['date_discovered'] = self.tz.localize(datetime.now())
+                                yield linkitem   
+                    if 'source' in item:
+                        for regexpr in self.regexes:
+                            iterator = regexpr.finditer(str(item['message']))
+                            for match in iterator:
+                                linkitem = DownloadLinkItem()
+                                linkitem['url'] = match.group()
+                                linkitem['source'] = str(self.source)
+                                linkitem['creator'] = item['from']['id']
+                                linkitem['date_published'] = parse(item['created_time'])
+                                linkitem['date_discovered'] = self.tz.localize(datetime.now())
+                                yield linkitem   
+                    if 'link' in item:
+                        for regexpr in self.regexes:
+                            iterator = regexpr.finditer(str(item['message']))
+                            for match in iterator:
+                                linkitem = DownloadLinkItem()
+                                linkitem['url'] = match.group()
+                                linkitem['source'] = str(self.source)
+                                linkitem['creator'] = item['from']['id']
+                                linkitem['date_published'] = parse(item['created_time'])
+                                linkitem['date_discovered'] = self.tz.localize(datetime.now())
+                                yield linkitem   
                 if 'comments' in item:
                     for comment in item['comments']:
                         if 'message' in comment:
@@ -122,11 +128,12 @@ class FacebookGroupSpider(BaseSpider):
                                     linkitem['source'] = str(self.source)
                                     linkitem['creator'] = comment['from']['id']
                                     linkitem['date_published'] = parse(comment['created_time'])
-                                    linkitem['date_discovered'] = datetime.now()
+                                    linkitem['date_discovered'] = self.tz.localize(datetime.now())
                                     yield linkitem
                                 
     def handle_spider_closed(self, spider, reason):
         if reason == "finished":
             print "Spider finished, updating site record"
-            print self.crawler().stats.get_value("items_dropped_count");
-            self.collection.update({"feedurl" : self.source},{"$set" : {"last_crawled" : datetime.now(), "next_crawl" : None}})
+            self.collection.update({"feedurl" : self.source},{"$set" : {"last_crawled" : self.tz.localize(datetime.now()), "next_crawl" : None}})
+            
+            print self._crawler.stats.get_value("items_dropped_count");

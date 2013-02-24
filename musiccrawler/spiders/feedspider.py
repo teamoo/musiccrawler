@@ -21,6 +21,7 @@ import musiccrawler.settings
 import pkg_resources
 import pymongo
 import re
+from pytz import timezone
 
 class FeedSpider(BaseSpider):        
     name = "feedspider"
@@ -37,11 +38,13 @@ class FeedSpider(BaseSpider):
         self.active = self.site['active']
         
         if self.site['last_crawled'] is None:
-            self.last_crawled = datetime.now() - monthdelta.MonthDelta(12)
+            self.last_crawled = self.tz.localize(datetime.now() - monthdelta.MonthDelta(12))
         else:
             self.last_crawled = self.site['last_crawled']
             
         log.msg("Received Site from Database:" + str(self.site), level=log.INFO)
+        
+        self.tz = timezone("Europe/Berlin")
         
         if self.active == False:
             log.msg("Site is deactivated, not crawling.", level=log.ERROR);
@@ -84,52 +87,52 @@ class FeedSpider(BaseSpider):
             else:
                 for entry in rssFeed.entries:
                     #TODO: wenn die Umwandlung zum Datum nicht klappt, weiter machen
-                    if (datetime.now() - monthdelta.MonthDelta(3)) < datetime.fromtimestamp(mktime(rssFeed.get('updated_parsed', datetime.now() - monthdelta.MonthDelta(2)))):
+                    if (self.tz.localize(datetime.now() - monthdelta.MonthDelta(3))) < datetime.fromtimestamp(mktime(rssFeed.get('updated_parsed', self.tz.localize(datetime.now() - monthdelta.MonthDelta(2))))):
                         log.msg(("Verarbeite Feed:" + rssFeed.get('title', response.url)), level=log.INFO)
-                        if (datetime.now() - monthdelta.MonthDelta(2)) < datetime.fromtimestamp(mktime(entry.get('published_parsed', datetime.now() - monthdelta.MonthDelta(1)))):
-                            if self.last_crawled < datetime.fromtimestamp(mktime(entry.get('published_parsed', datetime.now() - monthdelta.MonthDelta(1)))):
+                        if (self.tz.localize(datetime.now() - monthdelta.MonthDelta(2))) < datetime.fromtimestamp(mktime(entry.get('published_parsed', self.tz.localize(datetime.now() - monthdelta.MonthDelta(1))))):
+                            if self.last_crawled < datetime.fromtimestamp(mktime(entry.get('published_parsed', self.tz.localize(datetime.now() - monthdelta.MonthDelta(1))))):
                                 log.msg(("Verarbeite Eintrag:" + entry.get('title', "unnamed entry")), level=log.INFO)
                                 for regexpr in self.regexes:
                                     if 'summary' in entry:
-                                        iterator = regexpr.finditer(str(entry.summary))
+                                        iterator = regexpr.finditer(str(entry.summary).encode('utf-8'))
                                         for match in iterator:
                                             linkitem = DownloadLinkItem()
                                             linkitem['url'] = match.group()
                                             linkitem['source'] = self.start_urls[0]
                                             if entry.get('published_parsed',None) is None:
-                                                linkitem['date_published'] = datetime.now()
+                                                linkitem['date_published'] = self.tz.localize(datetime.now())
                                             else:
                                                 linkitem['date_published'] = datetime.fromtimestamp(mktime(entry.get('published_parsed')))
-                                            linkitem['date_discovered'] = datetime.now()
+                                            linkitem['date_discovered'] = self.tz.localize(datetime.now())
                                             yield linkitem
                                     if 'content' in entry:
-                                        iterator = regexpr.finditer(str(entry.content))
+                                        iterator = regexpr.finditer(str(entry.content).encode('utf-8'))
                                         for match in iterator:
                                             linkitem = DownloadLinkItem()
                                             linkitem['url'] = match.group()
                                             linkitem['source'] = self.start_urls[0]
                                             if entry.get('published_parsed',None) is None:
-                                                linkitem['date_published'] = datetime.now()
+                                                linkitem['date_published'] = self.tz.localize(datetime.now())
                                             else:
                                                 linkitem['date_published'] = datetime.fromtimestamp(mktime(entry.get('published_parsed')))
-                                            linkitem['date_discovered'] = datetime.now()
+                                            linkitem['date_discovered'] = self.tz.localize(datetime.now())
                                             yield linkitem
                                     if 'links' in entry:
-                                        iterator = regexpr.finditer(str(entry.links))
+                                        iterator = regexpr.finditer(str(entry.links).encode('utf-8'))
                                         for match in iterator:
                                             linkitem = DownloadLinkItem()
                                             linkitem['url'] = match.group()
                                             linkitem['source'] = self.start_urls[0]
                                             if entry.get('published_parsed',None) is None:
-                                                linkitem['date_published'] = datetime.now()
+                                                linkitem['date_published'] = self.tz.localize(datetime.now())
                                             else:
                                                 linkitem['date_published'] = datetime.fromtimestamp(mktime(entry.get('published_parsed')))
-                                            linkitem['date_discovered'] = datetime.now()
+                                            linkitem['date_discovered'] = self.tz.localize(datetime.now())
                                             yield linkitem
                                 for link in entry.links:
                                     request = Request(url=unicode(link.href),callback=self.parse_entry_html)
                                     if entry.get('published_parsed',None) is None:
-                                        request.meta['date_published'] = datetime.now()
+                                        request.meta['date_published'] = self.tz.localize(datetime.now())
                                     else:
                                         request.meta['date_published'] = datetime.fromtimestamp(mktime(entry.get('published_parsed')))
                                     yield request
@@ -149,11 +152,12 @@ class FeedSpider(BaseSpider):
                 linkitem['url'] = match.group()
                 linkitem['source'] = self.start_urls[0]
                 linkitem['date_published'] = response.meta['date_published']
-                linkitem['date_discovered'] = datetime.now()
+                linkitem['date_discovered'] = self.tz.localize(datetime.now())
                 yield linkitem
                 
     def handle_spider_closed(self, spider, reason):
         if reason == "finished":
-            print "Spider finished, updating site record"
-            print self.crawler().stats.get_value("items_dropped_count");
-            self.collection.update({"feedurl" : self.source},{"$set" : {"last_crawled" : datetime.now(), "next_crawl" : None}})
+            log.msg("Spider finished, updating site record",level=log.INFO)
+            self.collection.update({"feedurl" : self.source},{"$set" : {"last_crawled" : self.tz.localize(datetime.now()), "next_crawl" : None}})
+            
+            log.msg("Errors: " + str(self._crawler.stats.get_value("log_count/ERROR")),level=log.INFO);
