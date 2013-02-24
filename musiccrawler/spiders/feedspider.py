@@ -8,8 +8,7 @@
 
 from datetime import datetime
 from musiccrawler.items import DownloadLinkItem
-from pkgutil import get_loader
-from scrapy import log, signals, stats
+from scrapy import log, signals
 from scrapy.http import Request
 from scrapy.spider import BaseSpider
 from scrapy.xlib.pydispatch import dispatcher
@@ -19,12 +18,9 @@ import json
 import math
 import monthdelta
 import musiccrawler.settings
-import os
-import sys
+import pkg_resources
 import pymongo
 import re
-import pkgutil
-import pkg_resources
 
 class FeedSpider(BaseSpider):        
     name = "feedspider"
@@ -50,21 +46,12 @@ class FeedSpider(BaseSpider):
         if self.active == False:
             log.msg("Site is deactivated, not crawling.", level=log.ERROR);
         else:
-            data = pkg_resources.ResourceManager.resource_filename(self, '', 'hosts.json')
-            print data
+            hosts = json.loads(pkg_resources.resource_string('musiccrawler.config', musiccrawler.settings.HOSTS_FILE_PATH))
+            log.msg("Loaded " + str(len(hosts)) + " hoster", level=log.INFO)
             
-            data2 = pkg_resources.ResourceManager.resource_filename(self, 'musiccrawler', 'hosts.json')
-            print data2
+            decrypters = json.loads(pkg_resources.resource_string('musiccrawler.config', musiccrawler.settings.DECRYPTERS_FILE_PATH))
+            log.msg("Loaded " + str(len(decrypters)) + " decrypter", level=log.INFO)
             
-            test = pkgutil.get_data('musiccrawler', 'hosts.json')
-            test2 = pkgutil.get_data('', 'decrypters.json')
-            
-            print test
-            print test2
-            
-            hosts = json.loads(pkgutil.get_data('musiccrawler', musiccrawler.settings.HOSTS_FILE_PATH))
-            
-            decrypters = json.loads(pkgutil.get_data('musiccrawler'.musiccrawler.settings.DECRYPTERS_FILE_PATH))
             regex_group_count = 35
             self.regexes = []
             
@@ -167,28 +154,6 @@ class FeedSpider(BaseSpider):
                 
     def handle_spider_closed(self, spider, reason):
         if reason == "finished":
-            print self.stats.get_value("items_dropped_count");
+            print "Spider finished, updating site record"
+            print self.crawler().stats.get_value("items_dropped_count");
             self.collection.update({"feedurl" : self.source},{"$set" : {"last_crawled" : datetime.now(), "next_crawl" : None}})
-            
-def get_data_smart(package, resource, as_string=True):
-    """Rewrite of pkgutil.get_data() that actually lets the user determine if data should
-    be returned read into memory (aka as_string=True) or just return the file path.
-    """
-    
-    loader = get_loader(package)
-    if loader is None or not hasattr(loader, 'get_data'):
-        return None
-    mod = sys.modules.get(package) or loader.load_module(package)
-    if mod is None or not hasattr(mod, '__file__'):
-        return None
-    
-    # Modify the resource name to be compatible with the loader.get_data
-    # signature - an os.path format "filename" starting with the dirname of
-    # the package's __file__
-    parts = resource.split('/')
-    parts.insert(0, os.path.dirname(mod.__file__))
-    resource_name = os.path.join(*parts)
-    if as_string:
-        return loader.get_data(resource_name)
-    else:
-        return resource_name

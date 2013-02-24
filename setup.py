@@ -3,9 +3,11 @@
 from setuptools import setup, find_packages
 
 setup(
-    name         = 'project',
+    name         = 'musiccrawler',
     version      = '1.0',
     packages     = find_packages(),
     entry_points = {'scrapy': ['settings = musiccrawler.settings']},
-    data_files=[('hosts.json', ['hosts.json']),('decrypter.json', ['decrypter.json'])]
+    package_data = {
+        'musiccrawler.config': ['*.json']
+    }
 )
