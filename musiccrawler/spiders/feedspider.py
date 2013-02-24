@@ -36,6 +36,7 @@ class FeedSpider(BaseSpider):
         self.site = self.collection.find_one({"feedurl": kwargs.get('feedurl')})
         self.source = self.site['feedurl']
         self.active = self.site['active']
+        self.tz = timezone("Europe/Berlin")
         
         if self.site['last_crawled'] is None:
             self.last_crawled = self.tz.localize(datetime.now() - monthdelta.MonthDelta(12))
@@ -43,8 +44,6 @@ class FeedSpider(BaseSpider):
             self.last_crawled = self.site['last_crawled']
             
         log.msg("Received Site from Database:" + str(self.site), level=log.INFO)
-        
-        self.tz = timezone("Europe/Berlin")
         
         if self.active == False:
             log.msg("Site is deactivated, not crawling.", level=log.ERROR);
@@ -87,10 +86,10 @@ class FeedSpider(BaseSpider):
             else:
                 for entry in rssFeed.entries:
                     #TODO: wenn die Umwandlung zum Datum nicht klappt, weiter machen
-                    if (self.tz.localize(datetime.now() - monthdelta.MonthDelta(3))) < datetime.fromtimestamp(mktime(rssFeed.get('updated_parsed', self.tz.localize(datetime.now() - monthdelta.MonthDelta(2))))):
+                    if (datetime.now() - monthdelta.MonthDelta(3)) < datetime.fromtimestamp(mktime(rssFeed.get('updated_parsed', self.tz.localize(datetime.now() - monthdelta.MonthDelta(2))))):
                         log.msg(("Verarbeite Feed:" + rssFeed.get('title', response.url)), level=log.INFO)
-                        if (self.tz.localize(datetime.now() - monthdelta.MonthDelta(2))) < datetime.fromtimestamp(mktime(entry.get('published_parsed', self.tz.localize(datetime.now() - monthdelta.MonthDelta(1))))):
-                            if self.last_crawled < datetime.fromtimestamp(mktime(entry.get('published_parsed', self.tz.localize(datetime.now() - monthdelta.MonthDelta(1))))):
+                        if (datetime.now() - monthdelta.MonthDelta(2)) < datetime.fromtimestamp(mktime(entry.get('published_parsed', self.tz.localize(datetime.now() - monthdelta.MonthDelta(1))))):
+                            if self.last_crawled < datetime.fromtimestamp(mktime(entry.get('published_parsed', datetime.now() - monthdelta.MonthDelta(1)))):
                                 log.msg(("Verarbeite Eintrag:" + entry.get('title', "unnamed entry")), level=log.INFO)
                                 for regexpr in self.regexes:
                                     if 'summary' in entry:
