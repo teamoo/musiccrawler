@@ -34,7 +34,7 @@ class FacebookGroupSpider(BaseSpider):
         self.tz = timezone("Europe/Berlin")
         
         if self.site['last_crawled'] is None:
-            self.last_crawled = self.tz.localize(datetime.now() - monthdelta.MonthDelta(12))
+            self.last_crawled = datetime.now() - monthdelta.MonthDelta(12)
         else:
             self.last_crawled = self.site['last_crawled']
         
@@ -92,7 +92,7 @@ class FacebookGroupSpider(BaseSpider):
                                 linkitem['url'] = match.group()
                                 linkitem['source'] = str(self.source)
                                 linkitem['creator'] = item['from']['id']
-                                linkitem['date_published'] = parse(item['created_time'])
+                                linkitem['date_published'] = self.tz.localize(parse(item['created_time']))
                                 linkitem['date_discovered'] = self.tz.localize(datetime.now())
                                 yield linkitem   
                     if 'source' in item:
@@ -103,7 +103,7 @@ class FacebookGroupSpider(BaseSpider):
                                 linkitem['url'] = match.group()
                                 linkitem['source'] = str(self.source)
                                 linkitem['creator'] = item['from']['id']
-                                linkitem['date_published'] = parse(item['created_time'])
+                                linkitem['date_published'] = self.tz.localize(parse(item['created_time']))
                                 linkitem['date_discovered'] = self.tz.localize(datetime.now())
                                 yield linkitem   
                     if 'link' in item:
@@ -114,7 +114,7 @@ class FacebookGroupSpider(BaseSpider):
                                 linkitem['url'] = match.group()
                                 linkitem['source'] = str(self.source)
                                 linkitem['creator'] = item['from']['id']
-                                linkitem['date_published'] = parse(item['created_time'])
+                                linkitem['date_published'] = self.tz.localize(parse(item['created_time']))
                                 linkitem['date_discovered'] = self.tz.localize(datetime.now())
                                 yield linkitem   
                 if 'comments' in item:
@@ -127,13 +127,13 @@ class FacebookGroupSpider(BaseSpider):
                                     linkitem['url'] = match.group()
                                     linkitem['source'] = str(self.source)
                                     linkitem['creator'] = comment['from']['id']
-                                    linkitem['date_published'] = parse(comment['created_time'])
+                                    linkitem['date_published'] = self.tz.localize(parse(comment['created_time']))
                                     linkitem['date_discovered'] = self.tz.localize(datetime.now())
                                     yield linkitem
                                 
     def handle_spider_closed(self, spider, reason):
         if reason == "finished":
             print "Spider finished, updating site record"
-            self.collection.update({"feedurl" : self.source},{"$set" : {"last_crawled" : self.tz.localize(datetime.now()), "next_crawl" : None}})
+            self.collection.update({"feedurl" : self.source},{"$set" : {"last_crawled" : self.tz.localize(self.last_crawled), "next_crawl" : None}})
             
             print self._crawler.stats.get_value("items_dropped_count");
