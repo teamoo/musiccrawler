@@ -157,6 +157,6 @@ class FeedSpider(BaseSpider):
     def handle_spider_closed(self, spider, reason):
         if reason == "finished":
             log.msg("Spider finished, updating site record",level=log.INFO)
-            self.collection.update({"feedurl" : self.source},{"$set" : {"last_crawled" : self.tz.localize(datetime.now()), "next_crawl" : None}})
+            self.collection.update({"feedurl" : self.source},{"$set" : {"last_crawled" : self.tz.localize(self.last_crawled), "next_crawl" : None}})
             
             log.msg("Errors: " + str(self._crawler.stats.get_value("log_count/ERROR")),level=log.INFO);
