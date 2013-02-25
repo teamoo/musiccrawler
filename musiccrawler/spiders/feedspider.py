@@ -39,7 +39,7 @@ class FeedSpider(BaseSpider):
         self.tz = timezone("Europe/Berlin")
         
         if self.site['last_crawled'] is None:
-            self.last_crawled = self.tz.localize(datetime.now() - monthdelta.MonthDelta(12))
+            self.last_crawled = datetime.now() - monthdelta.MonthDelta(12)
         else:
             self.last_crawled = self.site['last_crawled']
             
@@ -86,9 +86,9 @@ class FeedSpider(BaseSpider):
             else:
                 for entry in rssFeed.entries:
                     #TODO: wenn die Umwandlung zum Datum nicht klappt, weiter machen
-                    if (datetime.now() - monthdelta.MonthDelta(3)) < datetime.fromtimestamp(mktime(rssFeed.get('updated_parsed', self.tz.localize(datetime.now() - monthdelta.MonthDelta(2))))):
+                    if (datetime.now() - monthdelta.MonthDelta(3)) < datetime.fromtimestamp(mktime(rssFeed.get('updated_parsed', datetime.now() - monthdelta.MonthDelta(2)))):
                         log.msg(("Verarbeite Feed:" + rssFeed.get('title', response.url)), level=log.INFO)
-                        if (datetime.now() - monthdelta.MonthDelta(2)) < datetime.fromtimestamp(mktime(entry.get('published_parsed', self.tz.localize(datetime.now() - monthdelta.MonthDelta(1))))):
+                        if (datetime.now() - monthdelta.MonthDelta(2)) < datetime.fromtimestamp(mktime(entry.get('published_parsed', datetime.now() - monthdelta.MonthDelta(1)))):
                             if self.last_crawled < datetime.fromtimestamp(mktime(entry.get('published_parsed', datetime.now() - monthdelta.MonthDelta(1)))):
                                 log.msg(("Verarbeite Eintrag:" + entry.get('title', "unnamed entry")), level=log.INFO)
                                 for regexpr in self.regexes:
@@ -101,7 +101,7 @@ class FeedSpider(BaseSpider):
                                             if entry.get('published_parsed',None) is None:
                                                 linkitem['date_published'] = self.tz.localize(datetime.now())
                                             else:
-                                                linkitem['date_published'] = datetime.fromtimestamp(mktime(entry.get('published_parsed')))
+                                                linkitem['date_published'] = self.tz.localize(datetime.fromtimestamp(mktime(entry.get('published_parsed'))))
                                             linkitem['date_discovered'] = self.tz.localize(datetime.now())
                                             yield linkitem
                                     if 'content' in entry:
@@ -113,7 +113,7 @@ class FeedSpider(BaseSpider):
                                             if entry.get('published_parsed',None) is None:
                                                 linkitem['date_published'] = self.tz.localize(datetime.now())
                                             else:
-                                                linkitem['date_published'] = datetime.fromtimestamp(mktime(entry.get('published_parsed')))
+                                                linkitem['date_published'] = self.tz.localize(datetime.fromtimestamp(mktime(entry.get('published_parsed'))))
                                             linkitem['date_discovered'] = self.tz.localize(datetime.now())
                                             yield linkitem
                                     if 'links' in entry:
@@ -125,7 +125,7 @@ class FeedSpider(BaseSpider):
                                             if entry.get('published_parsed',None) is None:
                                                 linkitem['date_published'] = self.tz.localize(datetime.now())
                                             else:
-                                                linkitem['date_published'] = datetime.fromtimestamp(mktime(entry.get('published_parsed')))
+                                                linkitem['date_published'] = self.tz.localize(datetime.fromtimestamp(mktime(entry.get('published_parsed'))))
                                             linkitem['date_discovered'] = self.tz.localize(datetime.now())
                                             yield linkitem
                                 for link in entry.links:
@@ -133,7 +133,7 @@ class FeedSpider(BaseSpider):
                                     if entry.get('published_parsed',None) is None:
                                         request.meta['date_published'] = self.tz.localize(datetime.now())
                                     else:
-                                        request.meta['date_published'] = datetime.fromtimestamp(mktime(entry.get('published_parsed')))
+                                        request.meta['date_published'] = self.tz.localize(datetime.fromtimestamp(mktime(entry.get('published_parsed'))))
                                     yield request
                             else:
                                 log.msg(("Feed-Entry was already spidered at last run:" + entry.get('title', "unnamed entry")), level=log.INFO)  
