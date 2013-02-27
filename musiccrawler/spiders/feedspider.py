@@ -8,6 +8,7 @@
 
 from datetime import datetime
 from musiccrawler.items import DownloadLinkItem
+from pytz import timezone
 from scrapy import log, signals
 from scrapy.http import Request
 from scrapy.spider import BaseSpider
@@ -21,7 +22,6 @@ import musiccrawler.settings
 import pkg_resources
 import pymongo
 import re
-from pytz import timezone
 
 class FeedSpider(BaseSpider):        
     name = "feedspider"
@@ -31,12 +31,15 @@ class FeedSpider(BaseSpider):
         dispatcher.connect(self.handle_spider_closed, signals.spider_closed)
         connection = pymongo.Connection(musiccrawler.settings.MONGODB_SERVER, musiccrawler.settings.MONGODB_PORT,tz_aware=True)
         self.db = connection[musiccrawler.settings.MONGODB_DB]
-        self.db.authenticate(musiccrawler.settings.MONGODB_USER, musiccrawler.settings.MONGODB_PASSWORD)
+
+        if musiccrawler.settings.__dict__.has_key('MONGODB_USER') and musiccrawler.settings.__dict__.has_key('MONGODB_PASSWORD'):
+            self.db.authenticate(musiccrawler.settings.MONGODB_USER, musiccrawler.settings.MONGODB_PASSWORD)
         self.collection = self.db['sites']
         self.site = self.collection.find_one({"feedurl": kwargs.get('feedurl')})
         self.source = self.site['feedurl']
         self.active = self.site['active']
         self.tz = timezone("Europe/Berlin")
+        self.start_urls = [self.site['feedurl']];
         
         if self.site['last_crawled'] is None:
             self.last_crawled = datetime.now() - monthdelta.MonthDelta(12)
@@ -56,8 +59,6 @@ class FeedSpider(BaseSpider):
             
             regex_group_count = 35
             self.regexes = []
-            
-            self.start_urls = [self.site['feedurl']];
             
             for i in range(int(math.ceil(len(hosts) / regex_group_count))):
                 hosterregex = ''
@@ -81,15 +82,15 @@ class FeedSpider(BaseSpider):
             rssFeed = feedparser.parse(response.url)
             
             if rssFeed.bozo == 1:
-                log.msg(("Feed kann nicht verarbeitet werden:" + str(response.url)), level=log.WARNING)
+                log.msg(("Feed kann nicht verarbeitet werden:" + str(response.url) + ", DEACTIVATING FEED!"), level=log.WARNING)
                 self.collection.update({"feedurl" : self.source},{"$set" : {"active" : False}})     
             else:
+                self.last_post = rssFeed.entries[0].get('published_parsed',rssFeed.get('updated_parsed',datetime.now()))
                 for entry in rssFeed.entries:
-                    #TODO: wenn die Umwandlung zum Datum nicht klappt, weiter machen
                     if (datetime.now() - monthdelta.MonthDelta(3)) < datetime.fromtimestamp(mktime(rssFeed.get('updated_parsed', datetime.now() - monthdelta.MonthDelta(2)))):
                         log.msg(("Verarbeite Feed:" + rssFeed.get('title', response.url)), level=log.INFO)
                         if (datetime.now() - monthdelta.MonthDelta(2)) < datetime.fromtimestamp(mktime(entry.get('published_parsed', datetime.now() - monthdelta.MonthDelta(1)))):
-                            if self.last_crawled < datetime.fromtimestamp(mktime(entry.get('published_parsed', datetime.now() - monthdelta.MonthDelta(1)))):
+                            if self.last_crawled < self.tz.localize(datetime.fromtimestamp(mktime(entry.get('published_parsed', datetime.now() - monthdelta.MonthDelta(1))))):
                                 log.msg(("Verarbeite Eintrag:" + entry.get('title', "unnamed entry")), level=log.INFO)
                                 for regexpr in self.regexes:
                                     if 'summary' in entry:
@@ -156,7 +157,13 @@ class FeedSpider(BaseSpider):
                 
     def handle_spider_closed(self, spider, reason):
         if reason == "finished":
-            log.msg("Spider finished, updating site record",level=log.INFO)
-            self.collection.update({"feedurl" : self.source},{"$set" : {"last_crawled" : self.tz.localize(self.last_crawled), "next_crawl" : None}})
+            discovered = int(self._crawler.stats.get_value("item_scraped_count",0)) + self.db['links'].find({"source" : self.source}).count()
             
-            log.msg("Errors: " + str(self._crawler.stats.get_value("log_count/ERROR")),level=log.INFO);
+            if int(self._crawler.stats.get_value("log_count/ERROR",0)) == 0:
+                log.msg("Spider finished without errors, updating site record",level=log.INFO)
+                self.collection.update({"feedurl" : self.source},{"$set" : {"last_crawled" : self.last_crawled, "next_crawl" : None, "discovered_links": discovered, "last_post" : self.last_post}})
+            else:
+                log.msg("Spider finished with errors, NOT updating site record",level=log.WARNING)
+                self.collection.update({"feedurl" : self.source},{"$set" : {"next_crawl" : None, "discovered_links": discovered, "last_post" : self.last_post}})
+        else:
+            log.msg("Spider finished unexpectedly, NOT updating site record",level=log.WARNING)
