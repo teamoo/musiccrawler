@@ -31,7 +31,6 @@ class FeedSpider(BaseSpider):
         dispatcher.connect(self.handle_spider_closed, signals.spider_closed)
         connection = pymongo.Connection(musiccrawler.settings.MONGODB_SERVER, musiccrawler.settings.MONGODB_PORT,tz_aware=True)
         self.db = connection[musiccrawler.settings.MONGODB_DB]
-
         if musiccrawler.settings.__dict__.has_key('MONGODB_USER') and musiccrawler.settings.__dict__.has_key('MONGODB_PASSWORD'):
             self.db.authenticate(musiccrawler.settings.MONGODB_USER, musiccrawler.settings.MONGODB_PASSWORD)
         self.collection = self.db['sites']
@@ -39,7 +38,7 @@ class FeedSpider(BaseSpider):
         self.source = self.site['feedurl']
         self.active = self.site['active']
         self.tz = timezone("Europe/Berlin")
-        self.start_urls = [self.site['feedurl']];
+        self.start_urls = [self.site['feedurl']]
         
         if self.site['last_crawled'] is None:
             self.last_crawled = datetime.now() - monthdelta.MonthDelta(12)
@@ -76,6 +75,8 @@ class FeedSpider(BaseSpider):
                     hosterpattern = unicode(decrypter['pattern']).rstrip('\r\n') + '|'
                     hosterregex += hosterpattern.encode('utf-8')
                 self.regexes.append(re.compile("\"" + hosterregex[:-1] + "\"", re.IGNORECASE))
+            
+            log.msg("Spider initialized.", level=log.INFO)   
                 
     def parse(self, response):
         if self.active == True:
