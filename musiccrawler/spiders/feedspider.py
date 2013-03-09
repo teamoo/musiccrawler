@@ -5,6 +5,10 @@
 # Please let me know about any discrepencies you may find in the technical and functional aspects of this script.
 #
 # -Sid
+import sys
+
+reload(sys)
+sys.setdefaultencoding( "utf-8" )
 
 from datetime import datetime
 from musiccrawler.items import DownloadLinkItem
@@ -86,12 +90,12 @@ class FeedSpider(BaseSpider):
                 log.msg(("Feed kann nicht verarbeitet werden:" + str(response.url) + ", DEACTIVATING FEED!"), level=log.WARNING)
                 self.collection.update({"feedurl" : self.source},{"$set" : {"active" : False}})     
             else:
-                self.last_post = rssFeed.entries[0].get('published_parsed',rssFeed.get('updated_parsed',datetime.now()))
+                self.last_post = datetime.fromtimestamp(mktime(rssFeed.entries[0].get('published_parsed',rssFeed.get('updated_parsed',datetime.now()))))
                 for entry in rssFeed.entries:
                     if (datetime.now() - monthdelta.MonthDelta(3)) < datetime.fromtimestamp(mktime(rssFeed.get('updated_parsed', datetime.now() - monthdelta.MonthDelta(2)))):
                         log.msg(("Verarbeite Feed:" + rssFeed.get('title', response.url)), level=log.INFO)
                         if (datetime.now() - monthdelta.MonthDelta(2)) < datetime.fromtimestamp(mktime(entry.get('published_parsed', datetime.now() - monthdelta.MonthDelta(1)))):
-                            if self.last_crawled < self.tz.localize(datetime.fromtimestamp(mktime(entry.get('published_parsed', datetime.now() - monthdelta.MonthDelta(1))))):
+                            if self.last_crawled < datetime.fromtimestamp(mktime(entry.get('published_parsed', datetime.now() - monthdelta.MonthDelta(1)))):
                                 log.msg(("Verarbeite Eintrag:" + entry.get('title', "unnamed entry")), level=log.INFO)
                                 for regexpr in self.regexes:
                                     if 'summary' in entry:
