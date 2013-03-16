@@ -168,11 +168,9 @@ class FeedSpider(BaseSpider):
             
             if int(self._crawler.stats.get_value("log_count/ERROR",0)) == 0:
                 log.msg("Spider finished without errors, updating site record",level=log.INFO)
-                if not self.last_post is None:
-                    self.collection.update({"feedurl" : self.source},{"$set" : {"last_crawled" : datetime.now(), "next_crawl" : None, "discovered_links": discovered, "last_post" : self.last_post}})
+                self.collection.update({"feedurl" : self.source},{"$set" : {"last_crawled" : datetime.now(), "next_crawl" : None, "discovered_links": discovered, "last_post" : self.last_post}})
             else:
                 log.msg("Spider finished with errors, NOT updating site record",level=log.WARNING)
-                if not self.last_post is None:
-                    self.collection.update({"feedurl" : self.source},{"$set" : {"next_crawl" : None, "discovered_links": discovered, "last_post" : self.last_post}})
+                self.collection.update({"feedurl" : self.source},{"$set" : {"next_crawl" : None, "discovered_links": discovered, "last_post" : self.last_post}})
         else:
             log.msg("Spider finished unexpectedly, NOT updating site record",level=log.WARNING)
