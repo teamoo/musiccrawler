@@ -19,7 +19,7 @@ class FacebookGroupSpider(BaseSpider):
     def __init__(self, **kwargs):
         log.msg("Initializing Spider", level=log.INFO)
         dispatcher.connect(self.handle_spider_closed, signals.spider_closed)
-        connection = pymongo.Connection(musiccrawler.settings.MONGODB_SERVER, musiccrawler.settings.MONGODB_PORT,tz_aware=True)
+        connection = pymongo.Connection(musiccrawler.settings.MONGODB_SERVER, musiccrawler.settings.MONGODB_PORT, tz_aware=True)
         self.db = connection[musiccrawler.settings.MONGODB_DB]
         if musiccrawler.settings.__dict__.has_key('MONGODB_USER') and musiccrawler.settings.__dict__.has_key('MONGODB_PASSWORD'):
             self.db.authenticate(musiccrawler.settings.MONGODB_USER, musiccrawler.settings.MONGODB_PASSWORD)
@@ -29,8 +29,8 @@ class FacebookGroupSpider(BaseSpider):
         self.active = self.site['active']
         self.tz = timezone("Europe/Berlin")
         
-        self.groupid = str(self.site.get('groupid',""))
-        self.accesstoken = self.site.get('accesstoken',"")
+        self.groupid = str(self.site.get('groupid', ""))
+        self.accesstoken = self.site.get('accesstoken', "")
         
         if self.site['last_crawled'] is None:
             self.last_crawled = datetime.now() - monthdelta.MonthDelta(12)
@@ -42,7 +42,7 @@ class FacebookGroupSpider(BaseSpider):
         if self.active == False:
             log.msg("Site is deactivated, not crawling.", level=log.ERROR);
         elif self.accesstoken is None:
-            self.collection.update({"feedurl" : self.source},{"$set" : {"active" : False}})
+            self.collection.update({"feedurl" : self.source}, {"$set" : {"active" : False}})
             log.msg("Access Token is not set, spider cannot crawl.", level=log.ERROR);
         else:
             self.start_urls = ["https://graph.facebook.com/" + self.groupid + "/feed?access_token=" + self.accesstoken]                
@@ -60,7 +60,7 @@ class FacebookGroupSpider(BaseSpider):
                 hosterregex = ''
         
                 for hoster in hosts[(i + 1) * regex_group_count - regex_group_count:(i + 1) * regex_group_count]:
-                    hosterpattern = unicode(hoster['pattern']).rstrip('\r\n').replace("/", "\/",99).replace(":", "\:",99).replace("\d+{", "\d{",10).replace("++", "+",10).replace("\r\n", "",10).replace("|[\p{L}\w-%]+\/[\p{L}\w-%]+", "",10).replace("decrypted","",10).replace("httpJDYoutube","http",10) + '|'
+                    hosterpattern = unicode(hoster['pattern']).rstrip('\r\n').replace("/", "\/", 99).replace(":", "\:", 99).replace("\d+{", "\d{", 10).replace("++", "+", 10).replace("\r\n", "", 10).replace("|[\p{L}\w-%]+\/[\p{L}\w-%]+", "", 10).replace("decrypted", "", 10).replace("httpJDYoutube", "http", 10) + '|'
                     hosterregex += hosterpattern.encode('utf-8')
                 
                 self.regexes.append(re.compile("'" + hosterregex[:-1] + "'", re.IGNORECASE))
@@ -138,13 +138,13 @@ class FacebookGroupSpider(BaseSpider):
     
     def handle_spider_closed(self, spider, reason):
         if reason == "finished":
-            discovered = int(self._crawler.stats.get_value("item_scraped_count",0)) + self.db['links'].find({"source" : self.source}).count()
+            discovered = int(self._crawler.stats.get_value("item_scraped_count", 0)) + self.db['links'].find({"source" : self.source}).count()
             
-            if int(self._crawler.stats.get_value("log_count/ERROR",0)) == 0:
-                log.msg("Spider finished without errors, updating site record",level=log.INFO)
-                self.collection.update({"feedurl" : self.source},{"$set" : {"last_crawled" : self.last_crawled, "next_crawl" : None, "discovered_links": discovered, "last_post" : self.last_post}})
+            if int(self._crawler.stats.get_value("log_count/ERROR", 0)) == 0:
+                log.msg("Spider finished without errors, updating site record", level=log.INFO)
+                self.collection.update({"feedurl" : self.source}, {"$set" : {"last_crawled" : self.last_crawled, "next_crawl" : None, "discovered_links": discovered, "last_post" : self.last_post}})
             else:
-                log.msg("Spider finished with errors, NOT updating site record",level=log.WARNING)
-                self.collection.update({"feedurl" : self.source},{"$set" : {"next_crawl" : None, "discovered_links": discovered, "last_post" : self.last_post}})
+                log.msg("Spider finished with errors, NOT updating site record", level=log.WARNING)
+                self.collection.update({"feedurl" : self.source}, {"$set" : {"next_crawl" : None, "discovered_links": discovered, "last_post" : self.last_post}})
         else:
-            log.msg("Spider finished unexpectedly, NOT updating site record",level=log.WARNING)
+            log.msg("Spider finished unexpectedly, NOT updating site record", level=log.WARNING)

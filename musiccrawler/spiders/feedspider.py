@@ -8,7 +8,7 @@
 import sys
 
 reload(sys)
-sys.setdefaultencoding( "utf-8" )
+sys.setdefaultencoding("utf-8")
 
 from datetime import datetime
 from musiccrawler.items import DownloadLinkItem
@@ -33,7 +33,7 @@ class FeedSpider(BaseSpider):
     def __init__(self, **kwargs):
         log.msg("Initializing Spider", level=log.INFO)
         dispatcher.connect(self.handle_spider_closed, signals.spider_closed)
-        connection = pymongo.Connection(musiccrawler.settings.MONGODB_SERVER, musiccrawler.settings.MONGODB_PORT,tz_aware=True)
+        connection = pymongo.Connection(musiccrawler.settings.MONGODB_SERVER, musiccrawler.settings.MONGODB_PORT, tz_aware=True)
         self.db = connection[musiccrawler.settings.MONGODB_DB]
         if musiccrawler.settings.__dict__.has_key('MONGODB_USER') and musiccrawler.settings.__dict__.has_key('MONGODB_PASSWORD'):
             self.db.authenticate(musiccrawler.settings.MONGODB_USER, musiccrawler.settings.MONGODB_PASSWORD)
@@ -68,7 +68,7 @@ class FeedSpider(BaseSpider):
                 hosterregex = ''
         
                 for hoster in hosts[(i + 1) * regex_group_count - regex_group_count:(i + 1) * regex_group_count]:
-                    hosterpattern = unicode(hoster['pattern']).rstrip('\r\n').replace("/", "\/",99).replace(":", "\:",99).replace("\d+{", "\d{",10).replace("++", "+",10).replace("\r\n", "",10).replace("|[\p{L}\w-%]+\/[\p{L}\w-%]+", "",10).replace("decrypted","",10).replace("httpJDYoutube","http",10) + '|'
+                    hosterpattern = unicode(hoster['pattern']).rstrip('\r\n').replace("/", "\/", 99).replace(":", "\:", 99).replace("\d+{", "\d{", 10).replace("++", "+", 10).replace("\r\n", "", 10).replace("|[\p{L}\w-%]+\/[\p{L}\w-%]+", "", 10).replace("decrypted", "", 10).replace("httpJDYoutube", "http", 10) + '|'
                     hosterregex += hosterpattern.encode('utf-8')
                 
                 self.regexes.append(re.compile("'" + hosterregex[:-1] + "'", re.IGNORECASE))
@@ -89,10 +89,10 @@ class FeedSpider(BaseSpider):
             
             if rssFeed.bozo == 1:
                 log.msg(("Feed kann nicht verarbeitet werden:" + str(response.url) + ", DEACTIVATING FEED!"), level=log.WARNING)
-                self.collection.update({"feedurl" : self.source},{"$set" : {"active" : False}})     
+                self.collection.update({"feedurl" : self.source}, {"$set" : {"active" : False}})     
             else:
                 if isinstance(rssFeed.entries, (list, tuple)) and len(rssFeed.entries) >= 1:
-                    self.last_post = datetime.fromtimestamp(mktime(rssFeed.entries[0].get('published_parsed',rssFeed.get('updated_parsed',datetime.now().timetuple()))))
+                    self.last_post = datetime.fromtimestamp(mktime(rssFeed.entries[0].get('published_parsed', rssFeed.get('updated_parsed', datetime.now().timetuple()))))
                 for entry in rssFeed.entries:
                     if (datetime.now() - monthdelta.MonthDelta(3)) < datetime.fromtimestamp(mktime(rssFeed.get('updated_parsed', (datetime.now() - monthdelta.MonthDelta(2)).timetuple()))):
                         log.msg(("Verarbeite Feed:" + rssFeed.get('title', response.url)), level=log.INFO)
@@ -106,7 +106,7 @@ class FeedSpider(BaseSpider):
                                             linkitem = DownloadLinkItem()
                                             linkitem['url'] = match.group()
                                             linkitem['source'] = self.start_urls[0]
-                                            if entry.get('published_parsed',None) is None:
+                                            if entry.get('published_parsed', None) is None:
                                                 linkitem['date_published'] = self.tz.localize(datetime.now())
                                             else:
                                                 linkitem['date_published'] = self.tz.localize(datetime.fromtimestamp(mktime(entry.get('published_parsed'))))
@@ -118,7 +118,7 @@ class FeedSpider(BaseSpider):
                                             linkitem = DownloadLinkItem()
                                             linkitem['url'] = match.group()
                                             linkitem['source'] = self.start_urls[0]
-                                            if entry.get('published_parsed',None) is None:
+                                            if entry.get('published_parsed', None) is None:
                                                 linkitem['date_published'] = self.tz.localize(datetime.now())
                                             else:
                                                 linkitem['date_published'] = self.tz.localize(datetime.fromtimestamp(mktime(entry.get('published_parsed'))))
@@ -130,15 +130,15 @@ class FeedSpider(BaseSpider):
                                             linkitem = DownloadLinkItem()
                                             linkitem['url'] = match.group()
                                             linkitem['source'] = self.start_urls[0]
-                                            if entry.get('published_parsed',None) is None:
+                                            if entry.get('published_parsed', None) is None:
                                                 linkitem['date_published'] = self.tz.localize(datetime.now())
                                             else:
                                                 linkitem['date_published'] = self.tz.localize(datetime.fromtimestamp(mktime(entry.get('published_parsed'))))
                                             linkitem['date_discovered'] = self.tz.localize(datetime.now())
                                             yield linkitem
                                 for link in entry.links:
-                                    request = Request(url=unicode(link.href),callback=self.parse_entry_html)
-                                    if entry.get('published_parsed',None) is None:
+                                    request = Request(url=unicode(link.href), callback=self.parse_entry_html)
+                                    if entry.get('published_parsed', None) is None:
                                         request.meta['date_published'] = self.tz.localize(datetime.now())
                                     else:
                                         request.meta['date_published'] = self.tz.localize(datetime.fromtimestamp(mktime(entry.get('published_parsed'))))
@@ -149,7 +149,7 @@ class FeedSpider(BaseSpider):
                             log.msg(("Feed-Entry is older than 2 month:" + entry.get('title', "unnamed entry")), level=log.INFO)  
                     else:
                         log.msg(("Feed has not been updated within 3 months:" + entry.get('title', "unnamed entry")) + ", DEACTIVATING FEED!", level=log.WARNING)
-                        self.collection.update({"feedurl" : self.source},{"$set" : {"active" : False}})
+                        self.collection.update({"feedurl" : self.source}, {"$set" : {"active" : False}})
         
     def parse_entry_html(self, response):
         for regexpr in self.regexes:
@@ -164,13 +164,13 @@ class FeedSpider(BaseSpider):
                 
     def handle_spider_closed(self, spider, reason):
         if reason == "finished":
-            discovered = int(self._crawler.stats.get_value("item_scraped_count",0)) + self.db['links'].find({"source" : self.source}).count()
+            discovered = int(self._crawler.stats.get_value("item_scraped_count", 0)) + self.db['links'].find({"source" : self.source}).count()
             
-            if int(self._crawler.stats.get_value("log_count/ERROR",0)) == 0:
-                log.msg("Spider finished without errors, updating site record",level=log.INFO)
-                self.collection.update({"feedurl" : self.source},{"$set" : {"last_crawled" : datetime.now(), "next_crawl" : None, "discovered_links": discovered, "last_post" : self.last_post}})
+            if int(self._crawler.stats.get_value("log_count/ERROR", 0)) == 0:
+                log.msg("Spider finished without errors, updating site record", level=log.INFO)
+                self.collection.update({"feedurl" : self.source}, {"$set" : {"last_crawled" : datetime.now(), "next_crawl" : None, "discovered_links": discovered, "last_post" : self.last_post}})
             else:
-                log.msg("Spider finished with errors, NOT updating site record",level=log.WARNING)
-                self.collection.update({"feedurl" : self.source},{"$set" : {"next_crawl" : None, "discovered_links": discovered, "last_post" : self.last_post}})
+                log.msg("Spider finished with errors, NOT updating site record", level=log.WARNING)
+                self.collection.update({"feedurl" : self.source}, {"$set" : {"next_crawl" : None, "discovered_links": discovered, "last_post" : self.last_post}})
         else:
-            log.msg("Spider finished unexpectedly, NOT updating site record",level=log.WARNING)
+            log.msg("Spider finished unexpectedly, NOT updating site record", level=log.WARNING)
