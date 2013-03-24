@@ -43,7 +43,12 @@ class FeedSpider(BaseSpider):
         self.active = self.site['active']
         self.tz = timezone("Europe/Berlin")
         self.start_urls = [self.site['feedurl']]
-        self.last_post = self.site['last_post']
+        
+        
+        if "last_post" in self.site and not self.site['last_post'] is None:
+            self.last_post = self.site['last_post']
+        else:
+            self.last_post = None
         
         if self.site['last_crawled'] is None:
             self.last_crawled = self.tz.localize(datetime.now() - monthdelta.MonthDelta(12))
@@ -150,6 +155,7 @@ class FeedSpider(BaseSpider):
                     else:
                         log.msg(("Feed has not been updated within 3 months:" + entry.get('title', "unnamed entry")) + ", DEACTIVATING FEED!", level=log.WARNING)
                         self.collection.update({"feedurl" : self.source}, {"$set" : {"active" : False}})
+                        return
         
     def parse_entry_html(self, response):
         for regexpr in self.regexes:
@@ -168,9 +174,11 @@ class FeedSpider(BaseSpider):
             
             if int(self._crawler.stats.get_value("log_count/ERROR", 0)) == 0:
                 log.msg("Spider finished without errors, updating site record", level=log.INFO)
-                self.collection.update({"feedurl" : self.source}, {"$set" : {"last_crawled" : datetime.now(), "next_crawl" : None, "discovered_links": discovered, "last_post" : self.last_post}})
+                if self.last_post and not self.last_post is None:
+                    self.collection.update({"feedurl" : self.source},{"$set" : {"last_crawled" : datetime.now(), "next_crawl" : None, "discovered_links": discovered, "last_post" : self.last_post}})
             else:
                 log.msg("Spider finished with errors, NOT updating site record", level=log.WARNING)
-                self.collection.update({"feedurl" : self.source}, {"$set" : {"next_crawl" : None, "discovered_links": discovered, "last_post" : self.last_post}})
+                if self.last_post and not self.last_post is None:
+                    self.collection.update({"feedurl" : self.source}, {"$set" : {"next_crawl" : None, "discovered_links": discovered, "last_post" : self.last_post}})
         else:
             log.msg("Spider finished unexpectedly, NOT updating site record", level=log.WARNING)
