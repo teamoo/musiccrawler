@@ -84,6 +84,9 @@ class FacebookGroupSpider(BaseSpider):
                 self.last_post = parse(feed[0]['created_time'])
                                 
                 for item in feed:
+                    if parse(item['created_time']) > self.last_post:
+                        self.last_post = parse(item['created_time'])
+                    
                     if self.last_crawled < parse(item['created_time']):
                         if 'message' in item:
                             for regexpr in self.regexes:
