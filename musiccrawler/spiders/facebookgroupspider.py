@@ -82,7 +82,7 @@ class FacebookGroupSpider(BaseSpider):
                 
                 feed = groupfeed['data']
                 self.last_post = parse(feed[0]['created_time'])
-                
+                                
                 for item in feed:
                     if self.last_crawled < parse(item['created_time']):
                         if 'message' in item:
@@ -142,9 +142,12 @@ class FacebookGroupSpider(BaseSpider):
             
             if int(self._crawler.stats.get_value("log_count/ERROR", 0)) == 0:
                 log.msg("Spider finished without errors, updating site record", level=log.INFO)
-                self.collection.update({"feedurl" : self.source}, {"$set" : {"last_crawled" : self.last_crawled, "next_crawl" : None, "discovered_links": discovered, "last_post" : self.last_post}})
+                if self.last_post and not self.last_post is None:
+                    self.collection.update({"feedurl" : self.source},{"$set" : {"last_crawled" : datetime.now(), "next_crawl" : None, "discovered_links": discovered, "last_post" : self.last_post}})
             else:
                 log.msg("Spider finished with errors, NOT updating site record", level=log.WARNING)
-                self.collection.update({"feedurl" : self.source}, {"$set" : {"next_crawl" : None, "discovered_links": discovered, "last_post" : self.last_post}})
+                if self.last_post and not self.last_post is None:
+                    self.collection.update({"feedurl" : self.source}, {"$set" : {"next_crawl" : None, "discovered_links": discovered, "last_post" : self.last_post}})
         else:
             log.msg("Spider finished unexpectedly, NOT updating site record", level=log.WARNING)
+
