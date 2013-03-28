@@ -39,123 +39,132 @@ class FeedSpider(BaseSpider):
             self.db.authenticate(musiccrawler.settings.MONGODB_USER, musiccrawler.settings.MONGODB_PASSWORD)
         self.collection = self.db['sites']
         self.site = self.collection.find_one({"feedurl": kwargs.get('feedurl')})
-        self.source = self.site['feedurl']
-        self.active = self.site['active']
-        self.tz = timezone("Europe/Berlin")
-        self.start_urls = [self.site['feedurl']]
         
+        if not self.site is None:
         
-        if "last_post" in self.site and not self.site['last_post'] is None:
-            self.last_post = self.site['last_post']
-        else:
-            self.last_post = None
-        
-        if self.site['last_crawled'] is None:
-            self.last_crawled = self.tz.localize(datetime.now() - monthdelta.MonthDelta(12))
-        else:
-            self.last_crawled = self.site['last_crawled']
+            self.source = self.site['feedurl']
+            self.active = self.site['active']
+            self.tz = timezone("Europe/Berlin")
+            self.start_urls = [self.site['feedurl']]
             
-        log.msg("Received Site from Database:" + str(self.site), level=log.INFO)
-        
-        if self.active == False:
-            log.msg("Site is deactivated, not crawling.", level=log.ERROR);
-        else:
-            hosts = json.loads(pkg_resources.resource_string('musiccrawler.config', musiccrawler.settings.HOSTS_FILE_PATH))
-            log.msg("Loaded " + str(len(hosts)) + " hoster", level=log.INFO)
             
-            decrypters = json.loads(pkg_resources.resource_string('musiccrawler.config', musiccrawler.settings.DECRYPTERS_FILE_PATH))
-            log.msg("Loaded " + str(len(decrypters)) + " decrypter", level=log.INFO)
+            if "last_post" in self.site and not self.site['last_post'] is None:
+                self.last_post = self.site['last_post']
+            else:
+                self.last_post = None
             
-            regex_group_count = 35
-            self.regexes = []
-            
-            for i in range(int(math.ceil(len(hosts) / regex_group_count))):
-                hosterregex = ''
-        
-                for hoster in hosts[(i + 1) * regex_group_count - regex_group_count:(i + 1) * regex_group_count]:
-                    hosterpattern = unicode(hoster['pattern']).rstrip('\r\n').replace("/", "\/", 99).replace(":", "\:", 99).replace("\d+{", "\d{", 10).replace("++", "+", 10).replace("\r\n", "", 10).replace("|[\p{L}\w-%]+\/[\p{L}\w-%]+", "", 10).replace("decrypted", "", 10).replace("httpJDYoutube", "http", 10) + '|'
-                    hosterregex += hosterpattern.encode('utf-8')
+            if self.site['last_crawled'] is None:
+                self.last_crawled = self.tz.localize(datetime.now() - monthdelta.MonthDelta(12))
+            else:
+                self.last_crawled = self.site['last_crawled']
                 
-                self.regexes.append(re.compile("'" + hosterregex[:-1] + "'", re.IGNORECASE))
-                
-            for i in range(int(math.ceil(len(decrypters) / regex_group_count))):
-                hosterregex = ''
-        
-                for decrypter in decrypters[(i + 1) * regex_group_count - regex_group_count:(i + 1) * regex_group_count]:
-                    hosterpattern = unicode(decrypter['pattern']).rstrip('\r\n') + '|'
-                    hosterregex += hosterpattern.encode('utf-8')
-                self.regexes.append(re.compile("\"" + hosterregex[:-1] + "\"", re.IGNORECASE))
+            log.msg("Received Site from Database:" + str(self.site), level=log.INFO)
             
-            log.msg("Spider initialized.", level=log.INFO)   
+            if self.active == False:
+                log.msg("Site is deactivated, not crawling.", level=log.ERROR);
+            else:
+                hosts = json.loads(pkg_resources.resource_string('musiccrawler.config', musiccrawler.settings.HOSTS_FILE_PATH))
+                log.msg("Loaded " + str(len(hosts)) + " hoster", level=log.INFO)
+                
+                decrypters = json.loads(pkg_resources.resource_string('musiccrawler.config', musiccrawler.settings.DECRYPTERS_FILE_PATH))
+                log.msg("Loaded " + str(len(decrypters)) + " decrypter", level=log.INFO)
+                
+                regex_group_count = 35
+                self.regexes = []
+                
+                for i in range(int(math.ceil(len(hosts) / regex_group_count))):
+                    hosterregex = ''
+            
+                    for hoster in hosts[(i + 1) * regex_group_count - regex_group_count:(i + 1) * regex_group_count]:
+                        hosterpattern = unicode(hoster['pattern']).rstrip('\r\n').replace("/", "\/", 99).replace(":", "\:", 99).replace("\d+{", "\d{", 10).replace("++", "+", 10).replace("\r\n", "", 10).replace("|[\p{L}\w-%]+\/[\p{L}\w-%]+", "", 10).replace("decrypted", "", 10).replace("httpJDYoutube", "http", 10) + '|'
+                        hosterregex += hosterpattern.encode('utf-8')
+                    
+                    self.regexes.append(re.compile("'" + hosterregex[:-1] + "'", re.IGNORECASE))
+                    
+                for i in range(int(math.ceil(len(decrypters) / regex_group_count))):
+                    hosterregex = ''
+            
+                    for decrypter in decrypters[(i + 1) * regex_group_count - regex_group_count:(i + 1) * regex_group_count]:
+                        hosterpattern = unicode(decrypter['pattern']).rstrip('\r\n') + '|'
+                        hosterregex += hosterpattern.encode('utf-8')
+                    self.regexes.append(re.compile("\"" + hosterregex[:-1] + "\"", re.IGNORECASE))
+                
+                log.msg("Spider initialized.", level=log.INFO)
+        else:
+            log.msg(("Seite nicht gefunden: " + str(kwargs.get('feedurl'))), level=log.ERROR)
+            
                 
     def parse(self, response):
-        if self.active == True:
-            rssFeed = feedparser.parse(response.url)
-            
-            if rssFeed.bozo == 1:
-                log.msg(("Feed kann nicht verarbeitet werden:" + str(response.url) + ", DEACTIVATING FEED!"), level=log.WARNING)
-                self.collection.update({"feedurl" : self.source}, {"$set" : {"active" : False}})     
-            else:
-                log.msg(("Verarbeite Feed:" + rssFeed.get('title', response.url)), level=log.INFO)
-                if isinstance(rssFeed.entries, (list, tuple)) and len(rssFeed.entries) >= 1:
-                    self.last_post = datetime.fromtimestamp(mktime(rssFeed.entries[0].get('published_parsed', rssFeed.get('updated_parsed', datetime.now().timetuple()))))
-                for entry in rssFeed.entries:
-                    if (datetime.now() - monthdelta.MonthDelta(3)) < datetime.fromtimestamp(mktime(rssFeed.get('updated_parsed', (datetime.now() - monthdelta.MonthDelta(2)).timetuple()))):
-                        if (datetime.now() - monthdelta.MonthDelta(2)) < datetime.fromtimestamp(mktime(entry.get('published_parsed', (datetime.now() - monthdelta.MonthDelta(1)).timetuple()))):
-                            if self.last_crawled < self.tz.localize(datetime.fromtimestamp(mktime(entry.get('published_parsed', (datetime.now() - monthdelta.MonthDelta(1)).timetuple())))):
-                                log.msg(("Verarbeite Eintrag:" + entry.get('title', "unnamed entry")), level=log.INFO)
-                                for regexpr in self.regexes:
-                                    if 'summary' in entry:
-                                        iterator = regexpr.finditer(str(entry.summary).encode('utf-8'))
-                                        for match in iterator:
-                                            linkitem = DownloadLinkItem()
-                                            linkitem['url'] = match.group()
-                                            linkitem['source'] = self.start_urls[0]
-                                            if entry.get('published_parsed', None) is None:
-                                                linkitem['date_published'] = self.tz.localize(datetime.now())
-                                            else:
-                                                linkitem['date_published'] = self.tz.localize(datetime.fromtimestamp(mktime(entry.get('published_parsed'))))
-                                            linkitem['date_discovered'] = self.tz.localize(datetime.now())
-                                            yield linkitem
-                                    if 'content' in entry:
-                                        iterator = regexpr.finditer(str(entry.content).encode('utf-8'))
-                                        for match in iterator:
-                                            linkitem = DownloadLinkItem()
-                                            linkitem['url'] = match.group()
-                                            linkitem['source'] = self.start_urls[0]
-                                            if entry.get('published_parsed', None) is None:
-                                                linkitem['date_published'] = self.tz.localize(datetime.now())
-                                            else:
-                                                linkitem['date_published'] = self.tz.localize(datetime.fromtimestamp(mktime(entry.get('published_parsed'))))
-                                            linkitem['date_discovered'] = self.tz.localize(datetime.now())
-                                            yield linkitem
-                                    if 'links' in entry:
-                                        iterator = regexpr.finditer(str(entry.links).encode('utf-8'))
-                                        for match in iterator:
-                                            linkitem = DownloadLinkItem()
-                                            linkitem['url'] = match.group()
-                                            linkitem['source'] = self.start_urls[0]
-                                            if entry.get('published_parsed', None) is None:
-                                                linkitem['date_published'] = self.tz.localize(datetime.now())
-                                            else:
-                                                linkitem['date_published'] = self.tz.localize(datetime.fromtimestamp(mktime(entry.get('published_parsed'))))
-                                            linkitem['date_discovered'] = self.tz.localize(datetime.now())
-                                            yield linkitem
-                                for link in entry.links:
-                                    request = Request(url=unicode(link.href), callback=self.parse_entry_html)
-                                    if entry.get('published_parsed', None) is None:
-                                        request.meta['date_published'] = self.tz.localize(datetime.now())
-                                    else:
-                                        request.meta['date_published'] = self.tz.localize(datetime.fromtimestamp(mktime(entry.get('published_parsed'))))
-                                    yield request
+        if not self.site is None:
+            if self.active == True:
+                rssFeed = feedparser.parse(response.url)
+                
+                if rssFeed.bozo == 1:
+                    log.msg(("Feed kann nicht verarbeitet werden:" + str(response.url) + ", DEACTIVATING FEED!"), level=log.WARNING)
+                    self.collection.update({"feedurl" : self.source}, {"$set" : {"active" : False}})     
+                else:
+                    log.msg(("Verarbeite Feed:" + rssFeed.get('title', response.url)), level=log.INFO)
+                    if isinstance(rssFeed.entries, (list, tuple)) and len(rssFeed.entries) >= 1:
+                        self.last_post = datetime.fromtimestamp(mktime(rssFeed.entries[0].get('published_parsed', rssFeed.get('updated_parsed', datetime.now().timetuple()))))
+                    for entry in rssFeed.entries:
+                        if (datetime.now() - monthdelta.MonthDelta(3)) < datetime.fromtimestamp(mktime(rssFeed.get('updated_parsed', (datetime.now() - monthdelta.MonthDelta(2)).timetuple()))):
+                            if (datetime.now() - monthdelta.MonthDelta(2)) < datetime.fromtimestamp(mktime(entry.get('published_parsed', (datetime.now() - monthdelta.MonthDelta(1)).timetuple()))):
+                                if self.last_crawled < self.tz.localize(datetime.fromtimestamp(mktime(entry.get('published_parsed', (datetime.now() - monthdelta.MonthDelta(1)).timetuple())))):
+                                    log.msg(("Verarbeite Eintrag:" + entry.get('title', "unnamed entry")), level=log.INFO)
+                                    for regexpr in self.regexes:
+                                        if 'summary' in entry:
+                                            iterator = regexpr.finditer(str(entry.summary).encode('utf-8'))
+                                            for match in iterator:
+                                                linkitem = DownloadLinkItem()
+                                                linkitem['url'] = match.group()
+                                                linkitem['source'] = self.start_urls[0]
+                                                if entry.get('published_parsed', None) is None:
+                                                    linkitem['date_published'] = self.tz.localize(datetime.now())
+                                                else:
+                                                    linkitem['date_published'] = self.tz.localize(datetime.fromtimestamp(mktime(entry.get('published_parsed'))))
+                                                linkitem['date_discovered'] = self.tz.localize(datetime.now())
+                                                yield linkitem
+                                        if 'content' in entry:
+                                            iterator = regexpr.finditer(str(entry.content).encode('utf-8'))
+                                            for match in iterator:
+                                                linkitem = DownloadLinkItem()
+                                                linkitem['url'] = match.group()
+                                                linkitem['source'] = self.start_urls[0]
+                                                if entry.get('published_parsed', None) is None:
+                                                    linkitem['date_published'] = self.tz.localize(datetime.now())
+                                                else:
+                                                    linkitem['date_published'] = self.tz.localize(datetime.fromtimestamp(mktime(entry.get('published_parsed'))))
+                                                linkitem['date_discovered'] = self.tz.localize(datetime.now())
+                                                yield linkitem
+                                        if 'links' in entry:
+                                            iterator = regexpr.finditer(str(entry.links).encode('utf-8'))
+                                            for match in iterator:
+                                                linkitem = DownloadLinkItem()
+                                                linkitem['url'] = match.group()
+                                                linkitem['source'] = self.start_urls[0]
+                                                if entry.get('published_parsed', None) is None:
+                                                    linkitem['date_published'] = self.tz.localize(datetime.now())
+                                                else:
+                                                    linkitem['date_published'] = self.tz.localize(datetime.fromtimestamp(mktime(entry.get('published_parsed'))))
+                                                linkitem['date_discovered'] = self.tz.localize(datetime.now())
+                                                yield linkitem
+                                    for link in entry.links:
+                                        request = Request(url=unicode(link.href), callback=self.parse_entry_html)
+                                        if entry.get('published_parsed', None) is None:
+                                            request.meta['date_published'] = self.tz.localize(datetime.now())
+                                        else:
+                                            request.meta['date_published'] = self.tz.localize(datetime.fromtimestamp(mktime(entry.get('published_parsed'))))
+                                        yield request
+                                else:
+                                    log.msg(("Feed-Entry was already spidered at last run:" + entry.get('title', "unnamed entry")), level=log.INFO)  
                             else:
-                                log.msg(("Feed-Entry was already spidered at last run:" + entry.get('title', "unnamed entry")), level=log.INFO)  
+                                log.msg(("Feed-Entry is older than 2 month:" + entry.get('title', "unnamed entry")), level=log.INFO)  
                         else:
-                            log.msg(("Feed-Entry is older than 2 month:" + entry.get('title', "unnamed entry")), level=log.INFO)  
+                            log.msg(("Feed has not been updated within 3 months:" + entry.get('title', "unnamed entry")) + ", DEACTIVATING FEED!", level=log.WARNING)
+                            self.collection.update({"feedurl" : self.source}, {"$set" : {"active" : False}})
+                            return
                     else:
-                        log.msg(("Feed has not been updated within 3 months:" + entry.get('title', "unnamed entry")) + ", DEACTIVATING FEED!", level=log.WARNING)
-                        self.collection.update({"feedurl" : self.source}, {"$set" : {"active" : False}})
-                        return
+                        log.msg("Feed not found, NOT crawling.", level=log.ERROR)
         
     def parse_entry_html(self, response):
         for regexpr in self.regexes:
@@ -169,7 +178,7 @@ class FeedSpider(BaseSpider):
                 yield linkitem
                 
     def handle_spider_closed(self, spider, reason):
-        if reason == "finished":
+        if reason == "finished" and not self.site is None:
             discovered = int(self._crawler.stats.get_value("item_scraped_count", 0)) + self.db['links'].find({"source" : self.source}).count()
             
             if int(self._crawler.stats.get_value("log_count/ERROR", 0)) == 0:
