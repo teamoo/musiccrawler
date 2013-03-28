@@ -39,9 +39,7 @@ class FeedSpider(BaseSpider):
             self.db.authenticate(musiccrawler.settings.MONGODB_USER, musiccrawler.settings.MONGODB_PASSWORD)
         self.collection = self.db['sites']
         self.site = self.collection.find_one({"feedurl": kwargs.get('feedurl')})
-        
-        if not self.site is None:
-        
+
             self.source = self.site['feedurl']
             self.active = self.site['active']
             self.tz = timezone("Europe/Berlin")
@@ -90,8 +88,6 @@ class FeedSpider(BaseSpider):
                     self.regexes.append(re.compile("\"" + hosterregex[:-1] + "\"", re.IGNORECASE))
                 
                 log.msg("Spider initialized.", level=log.INFO)
-        else:
-            log.msg(("Seite nicht gefunden: " + str(kwargs.get('feedurl'))), level=log.ERROR)
             
                 
     def parse(self, response):

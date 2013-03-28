@@ -11,6 +11,7 @@ from scrapy.exceptions import DropItem
 import json
 import re
 import traceback
+import pkg_resources
 
 class CheckMusicDownloadLinkPipeline(object):
     urlregex = re.compile(
@@ -85,7 +86,7 @@ class CleanURLPipeline(object):
         
 class BadFilesPipeline(object):
     def __init__(self):
-        self.badlinks = open(pkg_resources.resource_string('musiccrawler.config', "badlinks.cfg")).read().split(";")
+        self.badlinks = pkg_resources.resource_string('musiccrawler.config', "badlinks.cfg").split(";")
 
     def process_item(self, item, spider):
         if str(item['url']).endswith(".jpg") or str(item['url']).endswith(".png") or str(item['url']).endswith(".gif"):
