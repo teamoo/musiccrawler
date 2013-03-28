@@ -40,54 +40,54 @@ class FeedSpider(BaseSpider):
         self.collection = self.db['sites']
         self.site = self.collection.find_one({"feedurl": kwargs.get('feedurl')})
 
-            self.source = self.site['feedurl']
-            self.active = self.site['active']
-            self.tz = timezone("Europe/Berlin")
-            self.start_urls = [self.site['feedurl']]
+        self.source = self.site['feedurl']
+        self.active = self.site['active']
+        self.tz = timezone("Europe/Berlin")
+        self.start_urls = [self.site['feedurl']]
+        
+        
+        if "last_post" in self.site and not self.site['last_post'] is None:
+            self.last_post = self.site['last_post']
+        else:
+            self.last_post = None
+        
+        if self.site['last_crawled'] is None:
+            self.last_crawled = self.tz.localize(datetime.now() - monthdelta.MonthDelta(12))
+        else:
+            self.last_crawled = self.site['last_crawled']
             
+        log.msg("Received Site from Database:" + str(self.site), level=log.INFO)
+        
+        if self.active == False:
+            log.msg("Site is deactivated, not crawling.", level=log.ERROR);
+        else:
+            hosts = json.loads(pkg_resources.resource_string('musiccrawler.config', musiccrawler.settings.HOSTS_FILE_PATH))
+            log.msg("Loaded " + str(len(hosts)) + " hoster", level=log.INFO)
             
-            if "last_post" in self.site and not self.site['last_post'] is None:
-                self.last_post = self.site['last_post']
-            else:
-                self.last_post = None
+            decrypters = json.loads(pkg_resources.resource_string('musiccrawler.config', musiccrawler.settings.DECRYPTERS_FILE_PATH))
+            log.msg("Loaded " + str(len(decrypters)) + " decrypter", level=log.INFO)
             
-            if self.site['last_crawled'] is None:
-                self.last_crawled = self.tz.localize(datetime.now() - monthdelta.MonthDelta(12))
-            else:
-                self.last_crawled = self.site['last_crawled']
+            regex_group_count = 35
+            self.regexes = []
+            
+            for i in range(int(math.ceil(len(hosts) / regex_group_count))):
+                hosterregex = ''
+        
+                for hoster in hosts[(i + 1) * regex_group_count - regex_group_count:(i + 1) * regex_group_count]:
+                    hosterpattern = unicode(hoster['pattern']).rstrip('\r\n').replace("/", "\/", 99).replace(":", "\:", 99).replace("\d+{", "\d{", 10).replace("++", "+", 10).replace("\r\n", "", 10).replace("|[\p{L}\w-%]+\/[\p{L}\w-%]+", "", 10).replace("decrypted", "", 10).replace("httpJDYoutube", "http", 10) + '|'
+                    hosterregex += hosterpattern.encode('utf-8')
                 
-            log.msg("Received Site from Database:" + str(self.site), level=log.INFO)
+                self.regexes.append(re.compile("'" + hosterregex[:-1] + "'", re.IGNORECASE))
+                
+            for i in range(int(math.ceil(len(decrypters) / regex_group_count))):
+                hosterregex = ''
+        
+                for decrypter in decrypters[(i + 1) * regex_group_count - regex_group_count:(i + 1) * regex_group_count]:
+                    hosterpattern = unicode(decrypter['pattern']).rstrip('\r\n') + '|'
+                    hosterregex += hosterpattern.encode('utf-8')
+                self.regexes.append(re.compile("\"" + hosterregex[:-1] + "\"", re.IGNORECASE))
             
-            if self.active == False:
-                log.msg("Site is deactivated, not crawling.", level=log.ERROR);
-            else:
-                hosts = json.loads(pkg_resources.resource_string('musiccrawler.config', musiccrawler.settings.HOSTS_FILE_PATH))
-                log.msg("Loaded " + str(len(hosts)) + " hoster", level=log.INFO)
-                
-                decrypters = json.loads(pkg_resources.resource_string('musiccrawler.config', musiccrawler.settings.DECRYPTERS_FILE_PATH))
-                log.msg("Loaded " + str(len(decrypters)) + " decrypter", level=log.INFO)
-                
-                regex_group_count = 35
-                self.regexes = []
-                
-                for i in range(int(math.ceil(len(hosts) / regex_group_count))):
-                    hosterregex = ''
-            
-                    for hoster in hosts[(i + 1) * regex_group_count - regex_group_count:(i + 1) * regex_group_count]:
-                        hosterpattern = unicode(hoster['pattern']).rstrip('\r\n').replace("/", "\/", 99).replace(":", "\:", 99).replace("\d+{", "\d{", 10).replace("++", "+", 10).replace("\r\n", "", 10).replace("|[\p{L}\w-%]+\/[\p{L}\w-%]+", "", 10).replace("decrypted", "", 10).replace("httpJDYoutube", "http", 10) + '|'
-                        hosterregex += hosterpattern.encode('utf-8')
-                    
-                    self.regexes.append(re.compile("'" + hosterregex[:-1] + "'", re.IGNORECASE))
-                    
-                for i in range(int(math.ceil(len(decrypters) / regex_group_count))):
-                    hosterregex = ''
-            
-                    for decrypter in decrypters[(i + 1) * regex_group_count - regex_group_count:(i + 1) * regex_group_count]:
-                        hosterpattern = unicode(decrypter['pattern']).rstrip('\r\n') + '|'
-                        hosterregex += hosterpattern.encode('utf-8')
-                    self.regexes.append(re.compile("\"" + hosterregex[:-1] + "\"", re.IGNORECASE))
-                
-                log.msg("Spider initialized.", level=log.INFO)
+            log.msg("Spider initialized.", level=log.INFO)
             
                 
     def parse(self, response):
