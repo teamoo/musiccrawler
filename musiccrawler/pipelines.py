@@ -84,9 +84,14 @@ class CleanURLPipeline(object):
         return item
         
 class BadFilesPipeline(object):
+    def __init__(self):
+        self.badlinks = open(pkg_resources.resource_string('musiccrawler.config', "badlinks.cfg")).read().split(";")
+
     def process_item(self, item, spider):
         if str(item['url']).endswith(".jpg") or str(item['url']).endswith(".png") or str(item['url']).endswith(".gif"):
             log.msg(("Bad Item:" + str(item)), level=log.DEBUG)
+            raise DropItem("Bad Link-URL found: %s" % item['url'])
+        elif str(item['url']) in self.badlinks:
             raise DropItem("Bad Link-URL found: %s" % item['url'])
         else:
             return item
