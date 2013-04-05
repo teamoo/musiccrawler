@@ -33,7 +33,7 @@ class FacebookGroupSpider(BaseSpider):
         self.accesstoken = self.site.get('accesstoken', "")
         
         if self.site['last_crawled'] is None:
-            self.last_crawled = datetime.now() - monthdelta.MonthDelta(12)
+            self.last_crawled = self.tz.localize(datetime.now() - monthdelta.MonthDelta(12))
         else:
             self.last_crawled = self.site['last_crawled']
 
