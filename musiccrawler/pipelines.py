@@ -115,5 +115,6 @@ class MongoDBExportPipeline(object):
         self.exporter.finish_exporting()
 
     def process_item(self, item, spider):
-        self.exporter.export_item(item)
-        return item       
+        if not item is None:
+            self.exporter.export_item(item)
+            return item       

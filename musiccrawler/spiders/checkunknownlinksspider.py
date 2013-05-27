@@ -14,22 +14,16 @@ from datetime import datetime, timedelta
 from musiccrawler.items import DownloadLinkItem
 from pytz import timezone
 from scrapy import log
-from scrapy.http import Request
 from scrapy.spider import BaseSpider
-from time import mktime
-import feedparser
-import monthdelta
 import musiccrawler.settings
-import pkg_resources
 import pymongo
 
 class CheckUnknownLinksSpider(BaseSpider):        
     name = "checkunknownlinksspider"
     
     def __init__(self):
-        self.tz = timezone("Europe/Berlin")
-        self.start_urls = ['http://www.google.de']
         log.msg("Initializing Spider", level=log.INFO)
+        self.start_urls = ['http://www.google.de']
         connection = pymongo.Connection(musiccrawler.settings.MONGODB_SERVER, musiccrawler.settings.MONGODB_PORT, tz_aware=True)
         self.db = connection[musiccrawler.settings.MONGODB_DB]
         if musiccrawler.settings.__dict__.has_key('MONGODB_USER') and musiccrawler.settings.__dict__.has_key('MONGODB_PASSWORD'):
@@ -52,12 +46,12 @@ class CheckUnknownLinksSpider(BaseSpider):
             unknownitem['url'] = unknownlink.get('url', None)
             unknownitem['source'] = unknownlink.get('source', None)
             if unknownlink.get('date_published', None) is None:
-                    unknownitem['date_published'] = self.tz.localize(datetime.now())
+                    unknownitem['date_published'] = timezone("Europe/Berlin").localize(datetime.now())
             else:
                 unknownitem['date_discovered'] = unknownlink.get('date_discovered', None)
             
             if unknownlink.get('date_discovered', None) is None:
-                    unknownitem['date_discovered'] = self.tz.localize(datetime.now())
+                    unknownitem['date_discovered'] = timezone("Europe/Berlin").localize(datetime.now())
             else:
                 unknownitem['date_discovered'] = unknownlink.get('date_discovered', None) 
                     
