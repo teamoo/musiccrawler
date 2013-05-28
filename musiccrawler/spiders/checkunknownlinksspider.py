@@ -37,8 +37,9 @@ class CheckUnknownLinksSpider(BaseSpider):
         log.msg("Removing " + str(self.collection.find({'date_published': {'$lte': (datetime.now()-timedelta(days=365))}}).count()) +  " links from Database that are older than one year.", level=log.INFO)
         self.collection.remove({'date_published': {'$lte': (datetime.now()-timedelta(days=365))}},False)   
                   
-    def parse(self, response):
+    def parse(self, request):
         for unknownlink in self.unknownlinks:
+            log.msg("Checking unknown link " + str(self.unknownlinks.index(unknownlink)+1)  + " of " + str(len(self.unknownlinks)), level=log.INFO)
             unknownitem = DownloadLinkItem()
             unknownitem['url'] = unknownlink.get('url', None)
             unknownitem['source'] = unknownlink.get('source', None)
