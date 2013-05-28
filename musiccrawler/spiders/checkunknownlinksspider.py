@@ -29,15 +29,12 @@ class CheckUnknownLinksSpider(BaseSpider):
         if musiccrawler.settings.__dict__.has_key('MONGODB_USER') and musiccrawler.settings.__dict__.has_key('MONGODB_PASSWORD'):
             self.db.authenticate(musiccrawler.settings.MONGODB_USER, musiccrawler.settings.MONGODB_PASSWORD)
         self.collection = self.db['links']
-        self.unknownlinks = self.collection.find({"status": 'unknown'})
-        log.msg("Received " + str(self.unknownlinks.count()) +  " UNKNOWN links from Database", level=log.INFO)
-        self.oldofflinelinkes = self.collection.find({'status': 'off', 'date_published': {'$lte': (datetime.now()-timedelta(days=90))}})
-        log.msg("Removing " + str(self.oldofflinelinkes.count()) +  " links from Database that are OFFLINE OR UNKNOWN and older than 90 days.", level=log.INFO)
+        self.unknownlinks = list(self.collection.find({"status": 'unknown'}))
+        log.msg("Received " + str(len(self.unknownlinks)) +  " UNKNOWN links from Database", level=log.INFO)
+        log.msg("Removing " + str(self.collection.find({'status': 'off', 'date_published': {'$lte': (datetime.now()-timedelta(days=90))}}).count()) +  " links from Database that are OFFLINE OR UNKNOWN and older than 90 days.", level=log.INFO)
         self.collection.remove({'status': 'off', 'date_published': {'$lte': (datetime.now()-timedelta(days=90))}},False)
         self.collection.remove({'status': 'unknown', 'date_published': {'$lte': (datetime.now()-timedelta(days=90))}},False)
-        
-        self.oldlinks = self.collection.find({'date_published': {'$lte': (datetime.now()-timedelta(days=365))}})
-        log.msg("Removing " + str(self.oldofflinelinkes.count()) +  " links from Database that are older than one year.", level=log.INFO)
+        log.msg("Removing " + str(self.collection.find({'date_published': {'$lte': (datetime.now()-timedelta(days=365))}}).count()) +  " links from Database that are older than one year.", level=log.INFO)
         self.collection.remove({'date_published': {'$lte': (datetime.now()-timedelta(days=365))}},False)   
                   
     def parse(self, response):
