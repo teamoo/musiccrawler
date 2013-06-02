@@ -42,13 +42,17 @@ class CheckMusicDownloadLinkPipeline(object):
                     if jsonitem is None:
                         log.msg(("Linkbuilder returned corrupted information for link " + str(item['url'])) , level=log.WARNING)
                         item['status'] = 'unknown'
-                        item['name'] = item['url']
+                        if not item['name'] is None:
+                            item['name'] = item['url']
                         return item
                     else: 
                         item['status'] = jsonitem['status']
                         item['url'] = jsonitem['url']
-                        item['hoster'] = jsonitem['hoster']
-                        item['name'] = jsonitem['name']
+                        if not '.vk.me' in item['url']:
+                            item['hoster'] = jsonitem['hoster']
+                            item['name'] = jsonitem['name']
+                        else:
+                            item['hoster'] = 'http://vk.com'
                         # item['password'] = jsonitem['password']
                         # item['metainfo'] = jsonitem['metainfo']
                         item['size'] = jsonitem['size']
@@ -57,7 +61,8 @@ class CheckMusicDownloadLinkPipeline(object):
                 else:
                     log.msg(("Linkbuilder returned corrupted information for link " + str(item['url'])) , level=log.WARNING)
                     item['status'] = 'unknown'
-                    item['name'] = item['url']
+                    if not item['name'] is None:
+                        item['name'] = item['url']
                     return item
             else:
                 raise DropItem("Link-URL is invalid: ", item['url'], ", Item will be dropped.")

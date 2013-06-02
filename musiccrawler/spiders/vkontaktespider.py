@@ -16,6 +16,7 @@ reload(sys)
 sys.setdefaultencoding("utf-8")
 
 from datetime import datetime
+from time import mktime
 from musiccrawler.items import DownloadLinkItem
 from pytz import timezone
 from scrapy import log, signals
@@ -43,12 +44,12 @@ class VKontakteSpider(BaseSpider):
             self.db.authenticate(musiccrawler.settings.MONGODB_USER, musiccrawler.settings.MONGODB_PASSWORD)
         self.collection = self.db['sites']
         self.site = self.collection.find_one({"feedurl": kwargs.get('feedurl')})
-        self.source = self.site
+        self.source = self.site['feedurl']
  
         self.active = self.site['active']
         self.tz = timezone("Europe/Berlin")
         self.start_urls = [self.site['feedurl']]
-        
+        self.groupid = str(self.site.get('groupid', 0))
         
         if "last_post" in self.site and not self.site['last_post'] is None:
             self.last_post = self.site['last_post']
@@ -97,42 +98,42 @@ class VKontakteSpider(BaseSpider):
     def parse(self, response):
         if not self.site is None:
             if self.active == True:
-                #vk = vkontakte.API('3685402','7RnJnG073kTdkK3Bf0F5')
-                
-                login = u'thimo.brinkmann@googlemail.com'
-                password = u'geheimoder'
-
                 try:
-                    vk = vk_api.VkApi(login, password)
+                    vk = vk_api.VkApi(musiccrawler.settings.VKONTAKTE_USER, musiccrawler.settings.VKONTAKTE_PASSWORD)
                 except vk_api.authorization_error, error_msg:
                     print error_msg
                     return
             
                 values = {
-                    'source_ids': 'g28519525',
-                    'filters' : 'post'
+                    'source_ids': 'g'+self.groupid,
+                    'filters' : 'post',
+                    'start_time' : time.mktime(self.last_crawled.timetuple()) 
                 }
                 response = vk.method('newsfeed.get',values)
+                
+                if (len(response['items']) >= 1):
+                    self.last_post = datetime.fromtimestamp(response['items'][0]['date'])
+                
                 for item in response['items']:
+                    if datetime.fromtimestamp(item['date']) > self.last_post:
+                        self.last_post = datetime.fromtimestamp(item['date'])
                     for attachment in item['attachments']:
                         if attachment['type'] == 'audio':
                             responseaudio = vk.method('audio.getById',{'audios': str(attachment['audio']['owner_id'])+'_'+str(attachment['audio']['aid'])})
-                            print responseaudio[0]['artist'] + " - " + responseaudio[0]['title'] + " : " + responseaudio[0]['url']
                             time.sleep(2)
+                            linkitem = DownloadLinkItem()
+                            linkitem['url'] = responseaudio[0]['url']
+                            linkitem['source'] = self.start_urls[0]
+                            linkitem['date_published'] = self.tz.localize(datetime.fromtimestamp(item['date']))
+                            linkitem['date_discovered'] = self.tz.localize(datetime.now())
+                            linkitem['name'] = responseaudio[0]['artist'] + " - " + responseaudio[0]['title']
+                            linkitem['metainfo'] = 'duration='+str(responseaudio[0]['duration'])
+                            print linkitem
+                            yield linkitem
+                            
         else:
-            log.msg("Feed not found, NOT crawling.", level=log.ERROR)
-                    
-    def parse_entry_html(self, response):
-        for regexpr in self.regexes:
-            iterator = regexpr.finditer(response.body)
-            for match in iterator:
-                linkitem = DownloadLinkItem()
-                linkitem['url'] = match.group()
-                linkitem['source'] = self.start_urls[0]
-                linkitem['date_published'] = response.meta['date_published']
-                linkitem['date_discovered'] = self.tz.localize(datetime.now())
-                yield linkitem
-                
+            log.msg("Site not found, NOT crawling.", level=log.ERROR)
+                          
     def handle_spider_closed(self, spider, reason):
         if reason == "finished" and not self.site is None:
             discovered = int(self._crawler.stats.get_value("item_scraped_count", 0)) + self.db['links'].find({"source" : self.source}).count()
