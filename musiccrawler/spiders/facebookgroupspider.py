@@ -76,68 +76,71 @@ class FacebookGroupSpider(BaseSpider):
             log.msg("Spider initialized.", level=log.INFO)
                 
     def parse(self, response):
-        if self.active == True:
-            if self.accesstoken is not None:
-                groupfeed = json.loads(response.body)
-                
-                feed = groupfeed['data']
-                self.last_post = parse(feed[0]['created_time'])
-                                
-                for item in feed:
-                    if parse(item['created_time']) > self.last_post:
-                        self.last_post = parse(item['created_time'])
+        if not self.site is None:
+            if self.active == True:
+                if self.accesstoken is not None:
+                    groupfeed = json.loads(response.body)
                     
-                    if self.last_crawled < parse(item['created_time']):
-                        if 'message' in item:
-                            for regexpr in self.regexes:
-                                iterator = regexpr.finditer(str(item['message']))
-                                for match in iterator:
-                                    linkitem = DownloadLinkItem()
-                                    linkitem['url'] = match.group()
-                                    linkitem['source'] = str(self.source)
-                                    linkitem['creator'] = item['from']['id']
-                                    linkitem['date_published'] = parse(item['created_time'])
-                                    linkitem['date_discovered'] = self.tz.localize(datetime.now())
-                                    yield linkitem   
-                        if 'source' in item:
-                            for regexpr in self.regexes:
-                                iterator = regexpr.finditer(str(item['message']))
-                                for match in iterator:
-                                    linkitem = DownloadLinkItem()
-                                    linkitem['url'] = match.group()
-                                    linkitem['source'] = str(self.source)
-                                    linkitem['creator'] = item['from']['id']
-                                    linkitem['date_published'] = parse(item['created_time'])
-                                    linkitem['date_discovered'] = self.tz.localize(datetime.now())
-                                    yield linkitem   
-                        if 'link' in item:
-                            for regexpr in self.regexes:
-                                iterator = regexpr.finditer(str(item['message']))
-                                for match in iterator:
-                                    linkitem = DownloadLinkItem()
-                                    linkitem['url'] = match.group()
-                                    linkitem['source'] = str(self.source)
-                                    linkitem['creator'] = item['from']['id']
-                                    linkitem['date_published'] = parse(item['created_time'])
-                                    linkitem['date_discovered'] = self.tz.localize(datetime.now())
-                                    yield linkitem   
-                    if 'comments' in item:
-                        for comment in item['comments']:
-                            if 'message' in comment:
+                    feed = groupfeed['data']
+                    self.last_post = parse(feed[0]['created_time'])
+                                    
+                    for item in feed:
+                        if parse(item['created_time']) > self.last_post:
+                            self.last_post = parse(item['created_time'])
+                        
+                        if self.last_crawled < parse(item['created_time']):
+                            if 'message' in item:
                                 for regexpr in self.regexes:
                                     iterator = regexpr.finditer(str(item['message']))
                                     for match in iterator:
                                         linkitem = DownloadLinkItem()
                                         linkitem['url'] = match.group()
                                         linkitem['source'] = str(self.source)
-                                        linkitem['creator'] = comment['from']['id']
-                                        linkitem['date_published'] = parse(comment['created_time'])
+                                        linkitem['creator'] = item['from']['id']
+                                        linkitem['date_published'] = parse(item['created_time'])
                                         linkitem['date_discovered'] = self.tz.localize(datetime.now())
-                                        yield linkitem
+                                        yield linkitem   
+                            if 'source' in item:
+                                for regexpr in self.regexes:
+                                    iterator = regexpr.finditer(str(item['message']))
+                                    for match in iterator:
+                                        linkitem = DownloadLinkItem()
+                                        linkitem['url'] = match.group()
+                                        linkitem['source'] = str(self.source)
+                                        linkitem['creator'] = item['from']['id']
+                                        linkitem['date_published'] = parse(item['created_time'])
+                                        linkitem['date_discovered'] = self.tz.localize(datetime.now())
+                                        yield linkitem   
+                            if 'link' in item:
+                                for regexpr in self.regexes:
+                                    iterator = regexpr.finditer(str(item['message']))
+                                    for match in iterator:
+                                        linkitem = DownloadLinkItem()
+                                        linkitem['url'] = match.group()
+                                        linkitem['source'] = str(self.source)
+                                        linkitem['creator'] = item['from']['id']
+                                        linkitem['date_published'] = parse(item['created_time'])
+                                        linkitem['date_discovered'] = self.tz.localize(datetime.now())
+                                        yield linkitem   
+                        if 'comments' in item:
+                            for comment in item['comments']:
+                                if 'message' in comment:
+                                    for regexpr in self.regexes:
+                                        iterator = regexpr.finditer(str(item['message']))
+                                        for match in iterator:
+                                            linkitem = DownloadLinkItem()
+                                            linkitem['url'] = match.group()
+                                            linkitem['source'] = str(self.source)
+                                            linkitem['creator'] = comment['from']['id']
+                                            linkitem['date_published'] = parse(comment['created_time'])
+                                            linkitem['date_discovered'] = self.tz.localize(datetime.now())
+                                            yield linkitem
+                else:
+                    log.msg("Facebook-Gruppe kann nicht verarbeitet werden:" + str(response.url) + ", Access-Token nicht vorhanden.", level=log.ERROR)
             else:
-                log.msg("Facebook-Gruppe kann nicht verarbeitet werden:" + str(response.url) + ", Access-Token nicht vorhanden.")
+                log.msg("Facebook-Gruppe kann nicht verarbeitet werden:" + str(response.url) + ", Gruppe ist inaktiv.", level=log.WARNING)
         else:
-            log.msg("Facebook-Gruppe kann nicht verarbeitet werden:" + str(response.url) + ", Gruppe ist inaktiv.")
+            log.msg("Facebook-Gruppe kann nicht verarbeitet werden:" + str(response.url) + ", Seite nicht gefunden.", level=log.ERROR)
     
     def handle_spider_closed(self, spider, reason):
         if reason == "finished":

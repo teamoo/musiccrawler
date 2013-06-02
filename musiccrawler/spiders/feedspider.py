@@ -158,9 +158,13 @@ class FeedSpider(BaseSpider):
                             else:
                                 log.msg(("Feed has not been updated within 3 months:" + entry.get('title', "unnamed entry")) + ", DEACTIVATING FEED!", level=log.WARNING)
                                 self.collection.update({"feedurl" : self.source}, {"$set" : {"active" : False}})
-                                return                       
+                                return
                     else:
-                        log.msg("Feed not found, NOT crawling.", level=log.ERROR)
+                        log.msg("Feed has no entries, NOT crawling.", level=log.ERROR)
+            else:
+                log.msg("Feed not active, NOT crawling.", level=log.WARNING) 
+        else:
+            log.msg("Feed not found, NOT crawling.", level=log.ERROR)
         
     def parse_entry_html(self, response):
         for regexpr in self.regexes:
