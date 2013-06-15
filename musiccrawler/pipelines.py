@@ -99,6 +99,12 @@ class BadFilesPipeline(object):
             raise DropItem("Bad Link-URL found: %s" % item['url'])
         elif str(item['url']) in self.badlinks:
             raise DropItem("Bad Link-URL found: %s" % item['url'])
+        elif "youtube.com/user" in str(item['url']):
+            raise DropItem("Bad Link-URL found: %s" % item['url'])
+        elif str(item['url']).count("/") < 4:
+            raise DropItem("Bad Link-URL found: %s" % item['url'])
+        elif "soundcloud.com" in str(item['url']) and "/download.mp3" in str(item['url']):
+            item['url'] = str(item['url']).replace("/download.mp3","")
         else:
             return item
         
