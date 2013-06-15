@@ -102,7 +102,7 @@ class FacebookGroupSpider(BaseSpider):
                                         yield linkitem   
                             if 'source' in item:
                                 for regexpr in self.regexes:
-                                    iterator = regexpr.finditer(str(item['message']))
+                                    iterator = regexpr.finditer(str(item['source']))
                                     for match in iterator:
                                         linkitem = DownloadLinkItem()
                                         linkitem['url'] = match.group()
@@ -113,7 +113,7 @@ class FacebookGroupSpider(BaseSpider):
                                         yield linkitem   
                             if 'link' in item:
                                 for regexpr in self.regexes:
-                                    iterator = regexpr.finditer(str(item['message']))
+                                    iterator = regexpr.finditer(str(item['link']))
                                     for match in iterator:
                                         linkitem = DownloadLinkItem()
                                         linkitem['url'] = match.group()
