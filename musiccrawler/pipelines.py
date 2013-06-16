@@ -52,7 +52,7 @@ class CheckMusicDownloadLinkPipeline(object):
                             item['hoster'] = jsonitem['hoster']
                             item['name'] = jsonitem['name']
                         else:
-                            item['hoster'] = 'http://vk.com'
+                            item['hoster'] = 'vk.com'
                         # item['password'] = jsonitem['password']
                         # item['metainfo'] = jsonitem['metainfo']
                         item['size'] = jsonitem['size']
@@ -101,7 +101,7 @@ class BadFilesPipeline(object):
             raise DropItem("Bad Link-URL found: %s" % item['url'])
         elif "youtube.com/user" in str(item['url']):
             raise DropItem("Bad Link-URL found: %s" % item['url'])
-        elif "soundcloud.com" in str(item['url']) and str(item['url']).count("/") < 4:
+        elif re.match(r"https?://soundcloud.com/\w*/$",str(item['url'])):
             raise DropItem("Bad Link-URL found: %s" % item['url'])
         elif "soundcloud.com" in str(item['url']) and "/download.mp3" in str(item['url']):
             item['url'] = str(item['url']).replace("/download.mp3","")
