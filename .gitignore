@@ -18,3 +18,4 @@ dist
 *.pyc
 *.db
 settings.py
+scrapy.cfg
