@@ -74,7 +74,13 @@ class DuplicateURLsPipeline(object):
         self.urls_seen = set()
 
     def process_item(self, item, spider):
-        if item['url'] in self.urls_seen:
+        if item is None:
+            log.msg(("Received empty itemp (corrupted)"), level=log.DEBUG)
+            raise DropItem("Dropped empty item (corrupted)")
+        elif not 'url' in item.keys():
+            log.msg(("Corrupted Item:" + str(item)), level=log.DEBUG)
+            raise DropItem("Corrupted Link found: %s" % item)
+        elif item['url'] in self.urls_seen:
             log.msg(("Duplicate Item:" + str(item)), level=log.DEBUG)
             raise DropItem("Duplicate Link-URL found: %s" % item['url'])
         else:
