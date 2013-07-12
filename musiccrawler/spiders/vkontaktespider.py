@@ -10,27 +10,22 @@ Created on 01.06.2013
 # Please let me know about any discrepencies you may find in the technical and functional aspects of this script.
 #
 # -Sid
-import sys
-
-reload(sys)
-sys.setdefaultencoding("utf-8")
-
 from datetime import datetime
-from time import mktime
 from musiccrawler.items import DownloadLinkItem
 from pytz import timezone
 from scrapy import log, signals
 from scrapy.spider import BaseSpider
 from scrapy.xlib.pydispatch import dispatcher
-import json
-import math
-import time
 import monthdelta
 import musiccrawler.settings
-import pkg_resources
 import pymongo
-import re
+import sys
+import time
 import vk_api
+
+reload(sys)
+sys.setdefaultencoding("utf-8")
+
 
 class VKontakteSpider(BaseSpider):        
     name = "vkontaktespider"
@@ -109,6 +104,8 @@ class VKontakteSpider(BaseSpider):
                                 linkitem['date_discovered'] = self.tz.localize(datetime.now())
                                 linkitem['name'] = responseaudio[0]['artist'] + " - " + responseaudio[0]['title']
                                 linkitem['metainfo'] = 'duration='+str(responseaudio[0]['duration'])
+                                linkitem['aid'] = str(attachment['audio']['aid'])
+                                linkitem['oid'] = str(attachment['audio']['owner_id'])
                                 yield linkitem
                 else:
                     log.msg("VKontakte Group ID could not be received for VKontakte-URL " + self.site.feedurl,level=log.ERROR)
@@ -119,7 +116,7 @@ class VKontakteSpider(BaseSpider):
                           
     def handle_spider_closed(self, spider, reason):
         if reason == "finished" and not self.site is None:
-            discovered = int(self._crawler.stats.get_value("item_scraped_count", 0)) + self.db['links'].find({"source" : self.source}).count()
+            discovered = self.db['links'].find({"source" : self.source}).count()
             
             if int(self._crawler.stats.get_value("log_count/ERROR", 0)) == 0:
                 log.msg("Spider finished without errors, updating site record", level=log.INFO)
