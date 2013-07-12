@@ -179,7 +179,7 @@ class FeedSpider(BaseSpider):
                 
     def handle_spider_closed(self, spider, reason):
         if reason == "finished" and not self.site is None:
-            discovered = int(self._crawler.stats.get_value("item_scraped_count", 0)) + self.db['links'].find({"source" : self.source}).count()
+            discovered = self.db['links'].find({"source" : self.source}).count()
             
             if int(self._crawler.stats.get_value("log_count/ERROR", 0)) == 0:
                 log.msg("Spider finished without errors, updating site record", level=log.INFO)
