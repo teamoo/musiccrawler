@@ -20,3 +20,4 @@ dist
 settings.py
 scrapy.cfg
 config
+*.cfg
