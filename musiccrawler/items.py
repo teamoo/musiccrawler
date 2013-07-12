@@ -20,3 +20,5 @@ class DownloadLinkItem(Item):
     hoster = Field()
     password = Field()
     metainfo = Field()
+    aid = Field()
+    oid = Field()
