@@ -87,7 +87,7 @@ class FeedSpider(BaseSpider):
                     hosterregex += hosterpattern.encode('utf-8')
                 self.regexes.append(re.compile("\"" + hosterregex[:-1] + "\"", re.IGNORECASE))
             
-            self.regexes.append(re.compile("http\:\/\/themusicfire\.com\/goto*", re.IGNORECASE))
+            self.regexes.append(re.compile("http\:\/\/themusicfire\.com\/goto(\w|\/)*", re.IGNORECASE))
             
             log.msg("Spider initialized.", level=log.INFO)
             
@@ -178,10 +178,11 @@ class FeedSpider(BaseSpider):
             for regexpr in self.regexes:
                 iterator = regexpr.finditer(response.body)
                 for match in iterator:
+                    print match.group()
                     if "http://themusicfire.com/goto" in match.group():
-                        request = Request(url=unicode(response.url), callback=self.parse_entry_html)
+                        request = Request(url=unicode(match.group().strip('"')), callback=self.parse_entry_html)
                         request.meta['date_published'] = response.meta['date_published']
-                        request.meta['entry_title'] = request.meta['entry_title']
+                        request.meta['entry_title'] = response.meta['entry_title']
                         yield request
                     else:    
                         linkitem = DownloadLinkItem()

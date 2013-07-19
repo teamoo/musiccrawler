@@ -5,6 +5,7 @@ from scrapy import log
 from scrapy.spider import BaseSpider
 import musiccrawler.settings
 import pymongo
+import re
 
 class CleanUpSpider(BaseSpider):        
     name = "cleanupspider"
@@ -22,7 +23,7 @@ class CleanUpSpider(BaseSpider):
         self.links.remove({'status': 'unknown', 'date_published': {'$lte': (datetime.now()-timedelta(days=90))}},False)
         log.msg("Removing " + str(self.links.find({'date_published': {'$lte': (datetime.now()-timedelta(days=365))}}).count()) +  " links from Database that are older than one year.", level=log.INFO)
         self.links.remove({'date_published': {'$lte': (datetime.now()-timedelta(days=365))}},False)
-        self.unknownlinks = list(self.links.find({"status": 'unknown'}))
+        self.unknownlinks = list(self.links.find({'$query':{"status": 'unknown',"url": { "$not": re.compile(".*dwmp3\.com.*") } },'$orderby': {"url": 1}}))
         log.msg("Received " + str(len(self.unknownlinks)) +  " UNKNOWN links from Database", level=log.INFO)
                   
     def parse(self, request):   
