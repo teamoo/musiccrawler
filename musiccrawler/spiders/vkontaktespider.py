@@ -65,7 +65,7 @@ class VKontakteSpider(BaseSpider):
                 try:
                     vk = vk_api.VkApi(musiccrawler.settings.VKONTAKTE_USER, musiccrawler.settings.VKONTAKTE_PASSWORD)
                 except vk_api.authorization_error, error_msg:
-                    print error_msg
+                    log.msg("Error authorizing to vk.com: " + error_msg,level=log.ERROR)
                     return
                 
                 if self.groupid is None:
@@ -79,7 +79,6 @@ class VKontakteSpider(BaseSpider):
                                 self.collection.update({"feedurl" : self.source},{"$set" : {"groupid" : groupinfo['gid']}})
                 
                 if self.groupid is not None:
-                
                     values = {
                         'source_ids': 'g'+str(self.groupid),
                         'filters' : 'post',
