@@ -31,13 +31,15 @@ class CleanUpSpider(BaseSpider):
             unknownitem = DownloadLinkItem()
             unknownitem['url'] = unknownlink.get('url', None)
             unknownitem['source'] = unknownlink.get('source', None)
-            if unknownlink.get('date_published', None) is None:
-                    unknownitem['date_published'] = timezone("Europe/Berlin").localize(datetime.now())
-            else:
-                unknownitem['date_discovered'] = unknownlink.get('date_discovered', None)            
+        
             if unknownlink.get('date_discovered', None) is None:
                     unknownitem['date_discovered'] = timezone("Europe/Berlin").localize(datetime.now())
             else:
                 unknownitem['date_discovered'] = unknownlink.get('date_discovered', None)
+                
+            if unknownlink.get('date_published', None) is None:
+                    unknownitem['date_published'] = unknownitem['date_discovered']
+            else:
+                unknownitem['date_published'] = unknownlink.get('date_published', None)    
                              
             yield unknownitem
