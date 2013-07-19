@@ -87,6 +87,8 @@ class FeedSpider(BaseSpider):
                     hosterregex += hosterpattern.encode('utf-8')
                 self.regexes.append(re.compile("\"" + hosterregex[:-1] + "\"", re.IGNORECASE))
             
+            self.regexes.append(re.compile("http\:\/\/themusicfire\.com\/goto*", re.IGNORECASE))
+            
             log.msg("Spider initialized.", level=log.INFO)
             
                 
@@ -151,6 +153,7 @@ class FeedSpider(BaseSpider):
                                                             request.meta['date_published'] = self.tz.localize(datetime.now())
                                                         else:
                                                             request.meta['date_published'] = self.tz.localize(datetime.fromtimestamp(mktime(entry.get('published_parsed'))))
+                                                        request.meta['entry_title'] = entry.get('title', "unnamed entry");
                                                         yield request
                                         else:
                                             log.msg(("Feed-Entry was already spidered at last run:" + entry.get('title', "unnamed entry")), level=log.INFO) 
@@ -170,16 +173,23 @@ class FeedSpider(BaseSpider):
             log.msg("Feed not found, NOT crawling.", level=log.ERROR)  
         
     def parse_entry_html(self, response):
+        log.msg("Crawling Feed-Entry " + response.meta['entry_title'], level=log.INFO)  
         if response.status < 400:
             for regexpr in self.regexes:
                 iterator = regexpr.finditer(response.body)
                 for match in iterator:
-                    linkitem = DownloadLinkItem()
-                    linkitem['url'] = match.group()
-                    linkitem['source'] = self.start_urls[0]
-                    linkitem['date_published'] = response.meta['date_published']
-                    linkitem['date_discovered'] = self.tz.localize(datetime.now())
-                    yield linkitem
+                    if "http://themusicfire.com/goto" in match.group():
+                        request = Request(url=unicode(response.url), callback=self.parse_entry_html)
+                        request.meta['date_published'] = response.meta['date_published']
+                        request.meta['entry_title'] = request.meta['entry_title']
+                        yield request
+                    else:    
+                        linkitem = DownloadLinkItem()
+                        linkitem['url'] = match.group()
+                        linkitem['source'] = self.start_urls[0]
+                        linkitem['date_published'] = response.meta['date_published']
+                        linkitem['date_discovered'] = self.tz.localize(datetime.now())
+                        yield linkitem
         else:
             log.msg("Feed-Entry not found.", level=log.ERROR)  
                 
