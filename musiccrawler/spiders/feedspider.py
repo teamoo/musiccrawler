@@ -100,7 +100,7 @@ class FeedSpider(BaseSpider):
                     
                     if rssFeed.bozo == 1:
                         log.msg(("Feed kann nicht verarbeitet werden:" + str(response.url) + ", DEACTIVATING FEED!"), level=log.WARNING)
-                        self.collection.update({"feedurl" : self.source}, {"$set" : {"active" : False}})     
+                        self.collection.update({"feedurl" : self.source}, {"$set" : {"active" : False, "next_crawl" : None}})     
                     else:
                         log.msg(("Verarbeite Feed:" + rssFeed.get('title', response.url)), level=log.INFO)
                         if isinstance(rssFeed.entries, (list, tuple)) and len(rssFeed.entries) >= 1:
@@ -178,15 +178,14 @@ class FeedSpider(BaseSpider):
             for regexpr in self.regexes:
                 iterator = regexpr.finditer(response.body)
                 for match in iterator:
-                    print match.group()
                     if "http://themusicfire.com/goto" in match.group():
-                        request = Request(url=unicode(match.group().strip('"')), callback=self.parse_entry_html)
+                        request = Request(url=unicode(match.group().split(" ")[0].strip('"')), callback=self.parse_entry_html)
                         request.meta['date_published'] = response.meta['date_published']
                         request.meta['entry_title'] = response.meta['entry_title']
                         yield request
                     else:    
                         linkitem = DownloadLinkItem()
-                        linkitem['url'] = match.group()
+                        linkitem['url'] = match.group().split(" ")[0].strip('"')
                         linkitem['source'] = self.start_urls[0]
                         linkitem['date_published'] = response.meta['date_published']
                         linkitem['date_discovered'] = self.tz.localize(datetime.now())
