@@ -111,6 +111,18 @@ class FeedSpider(BaseSpider):
                                         if self.last_crawled < self.tz.localize(datetime.fromtimestamp(mktime(entry.get('published_parsed', (datetime.now() - monthdelta.MonthDelta(1)).timetuple())))):
                                             log.msg(("Verarbeite Eintrag:" + entry.get('title', "unnamed entry")), level=log.INFO)
                                             for regexpr in self.regexes:
+						if 'description' in entry:
+                                                    iterator = regexpr.finditer(str(entry.description).encode('utf-8'))
+                                                    for match in iterator:
+                                                        linkitem = DownloadLinkItem()
+                                                        linkitem['url'] = match.group()
+                                                        linkitem['source'] = self.start_urls[0]
+                                                        if entry.get('published_parsed', None) is None:
+                                                            linkitem['date_published'] = self.tz.localize(datetime.now())
+                                                        else:
+                                                            linkitem['date_published'] = self.tz.localize(datetime.fromtimestamp(mktime(entry.get('published_parsed'))))
+                                                        linkitem['date_discovered'] = self.tz.localize(datetime.now())
+                                                        yield linkitem
                                                 if 'summary' in entry:
                                                     iterator = regexpr.finditer(str(entry.summary).encode('utf-8'))
                                                     for match in iterator:
