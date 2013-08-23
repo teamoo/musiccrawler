@@ -69,8 +69,8 @@ class VKontakteSpider(BaseSpider):
                     return
                 
                 if self.groupid is None:
+                    log.msg("No groupid present, fetching via VK API")
                     responsegroup = vk.method('groups.search',{'q':self.source.split('http://vk.com/')[1]})
-                
                     for groupinfo in responsegroup:
                         if isinstance(groupinfo, (dict)):
                             if groupinfo['screen_name'] == self.source.split('http://vk.com/')[1]:
@@ -109,7 +109,7 @@ class VKontakteSpider(BaseSpider):
                                         linkitem['oid'] = str(attachment['audio']['owner_id'])
                                         yield linkitem
                 else:
-                    log.msg("VKontakte Group ID could not be received for VKontakte-URL " + self.site.feedurl,level=log.ERROR)
+                    log.msg("VKontakte Group ID could not be received for VKontakte-URL " + self.site['feedurl'],level=log.ERROR)
             else:
                 log.msg("Site not active, NOT crawling.", level=log.WARNING)                    
         else:
