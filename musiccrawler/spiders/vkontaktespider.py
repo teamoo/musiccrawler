@@ -70,13 +70,22 @@ class VKontakteSpider(BaseSpider):
                 
                 if self.groupid is None:
                     log.msg("No groupid present, fetching via VK API")
-                    responsegroup = vk.method('groups.search',{'q':self.source.split('http://vk.com/')[1]})
+                    responsegroup = vk.method('groups.search',{'q':self.site.name})
                     for groupinfo in responsegroup:
                         if isinstance(groupinfo, (dict)):
-                            if groupinfo['screen_name'] == self.source.split('http://vk.com/')[1]:
+                            if groupinfo['screen_name'] == self.site.name:
                                 log.msg("VKontakte Group ID is " + str(groupinfo['gid']) + " received for VKontakte Site " + self.source,level=log.INFO)
                                 self.groupid = groupinfo['gid']
                                 self.collection.update({"feedurl" : self.source},{"$set" : {"groupid" : groupinfo['gid']}})
+                                    
+                    if self.groupid is None:    
+                        responsegroup = vk.method('groups.search',{'q':self.source.split('http://vk.com/')[1]})
+                        for groupinfo in responsegroup:
+                            if isinstance(groupinfo, (dict)):
+                                if groupinfo['screen_name'] == self.source.split('http://vk.com/')[1]:
+                                    log.msg("VKontakte Group ID is " + str(groupinfo['gid']) + " received for VKontakte Site " + self.source,level=log.INFO)
+                                    self.groupid = groupinfo['gid']
+                                    self.collection.update({"feedurl" : self.source},{"$set" : {"groupid" : groupinfo['gid']}})
                 
                 if self.groupid is not None:
                     values = {
