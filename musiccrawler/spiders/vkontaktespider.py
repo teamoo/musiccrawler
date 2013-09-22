@@ -70,10 +70,10 @@ class VKontakteSpider(BaseSpider):
                 
                 if self.groupid is None:
                     log.msg("No groupid present, fetching via VK API")
-                    responsegroup = vk.method('groups.search',{'q':self.site.name})
+                    responsegroup = vk.method('groups.search',{'q':self.site['name']})
                     for groupinfo in responsegroup:
                         if isinstance(groupinfo, (dict)):
-                            if groupinfo['screen_name'] == self.site.name:
+                            if groupinfo['screen_name'] == self.site['name']:
                                 log.msg("VKontakte Group ID is " + str(groupinfo['gid']) + " received for VKontakte Site " + self.source,level=log.INFO)
                                 self.groupid = groupinfo['gid']
                                 self.collection.update({"feedurl" : self.source},{"$set" : {"groupid" : groupinfo['gid']}})
@@ -101,22 +101,23 @@ class VKontakteSpider(BaseSpider):
                     for item in response['items']:
                         if datetime.fromtimestamp(item['date']) > self.last_post:
                             self.last_post = datetime.fromtimestamp(item['date'])
-                        for attachment in item['attachments']:
-                            if attachment['type'] == 'audio':
-                                responseaudio = vk.method('audio.getById',{'audios': str(attachment['audio']['owner_id'])+'_'+str(attachment['audio']['aid'])})
-                                time.sleep(2)
-                                linkitem = DownloadLinkItem()
-                                if len(responseaudio) > 0:
-                                    if 'url' in responseaudio[0] and 'artist' in responseaudio[0] and 'title' in responseaudio[0] and 'duration' in responseaudio[0] and 'aid' in attachment['audio'] and 'owner_id' in attachment['audio']:
-                                        linkitem['url'] = responseaudio[0]['url']
-                                        linkitem['source'] = self.start_urls[0]
-                                        linkitem['date_published'] = self.tz.localize(datetime.fromtimestamp(item['date']))
-                                        linkitem['date_discovered'] = self.tz.localize(datetime.now())
-                                        linkitem['name'] = responseaudio[0]['artist'] + " - " + responseaudio[0]['title']
-                                        linkitem['metainfo'] = 'duration='+str(responseaudio[0]['duration'])
-                                        linkitem['aid'] = str(attachment['audio']['aid'])
-                                        linkitem['oid'] = str(attachment['audio']['owner_id'])
-                                        yield linkitem
+                        if "attachments" in item:
+                            for attachment in item['attachments']:
+                                if attachment['type'] == 'audio':
+                                    responseaudio = vk.method('audio.getById',{'audios': str(attachment['audio']['owner_id'])+'_'+str(attachment['audio']['aid'])})
+                                    time.sleep(2)
+                                    linkitem = DownloadLinkItem()
+                                    if len(responseaudio) > 0:
+                                        if 'url' in responseaudio[0] and 'artist' in responseaudio[0] and 'title' in responseaudio[0] and 'duration' in responseaudio[0] and 'aid' in attachment['audio'] and 'owner_id' in attachment['audio']:
+                                            linkitem['url'] = responseaudio[0]['url']
+                                            linkitem['source'] = self.start_urls[0]
+                                            linkitem['date_published'] = self.tz.localize(datetime.fromtimestamp(item['date']))
+                                            linkitem['date_discovered'] = self.tz.localize(datetime.now())
+                                            linkitem['name'] = responseaudio[0]['artist'] + " - " + responseaudio[0]['title']
+                                            linkitem['metainfo'] = 'duration='+str(responseaudio[0]['duration'])
+                                            linkitem['aid'] = str(attachment['audio']['aid'])
+                                            linkitem['oid'] = str(attachment['audio']['owner_id'])
+                                            yield linkitem
                 else:
                     log.msg("VKontakte Group ID could not be received for VKontakte-URL " + self.site['feedurl'],level=log.ERROR)
             else:
