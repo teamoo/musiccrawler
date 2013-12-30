@@ -86,9 +86,7 @@ class FeedSpider(BaseSpider):
                     hosterpattern = unicode(decrypter['pattern']).rstrip('\r\n') + '|'
                     hosterregex += hosterpattern.encode('utf-8')
                 self.regexes.append(re.compile("\"" + hosterregex[:-1] + "\"", re.IGNORECASE))
-            
-            self.regexes.append(re.compile("http\:\/\/themusicfire\.com\/goto(\w|\/)*", re.IGNORECASE))
-            
+
             log.msg("Spider initialized.", level=log.INFO)
             
                 
@@ -111,7 +109,7 @@ class FeedSpider(BaseSpider):
                                         if self.last_crawled < self.tz.localize(datetime.fromtimestamp(mktime(entry.get('published_parsed', (datetime.now() - monthdelta.MonthDelta(1)).timetuple())))):
                                             log.msg(("Verarbeite Eintrag:" + entry.get('title', "unnamed entry")), level=log.INFO)
                                             for regexpr in self.regexes:
-						if 'description' in entry:
+                                                if 'description' in entry:
                                                     iterator = regexpr.finditer(str(entry.description).encode('utf-8'))
                                                     for match in iterator:
                                                         linkitem = DownloadLinkItem()
@@ -187,7 +185,11 @@ class FeedSpider(BaseSpider):
     def parse_entry_html(self, response):
         log.msg("Crawling Feed-Entry " + response.meta['entry_title'], level=log.INFO)  
         if response.status < 400:
-            for regexpr in self.regexes:
+            self.regexeslinkengine = []
+            self.regexeslinkengine.append(re.compile("http\:\/\/themusicfire\.com\/goto(\w|\/)*", re.IGNORECASE))
+            self.regexeslinkengine.append(re.compile("http\:\/\/4djsonline\.com\/download(\w|\/)*", re.IGNORECASE))
+            
+            for regexpr in self.regexeslinkengine:
                 iterator = regexpr.finditer(response.body)
                 for match in iterator:
                     if "http://themusicfire.com/goto" in match.group():
@@ -195,13 +197,21 @@ class FeedSpider(BaseSpider):
                         request.meta['date_published'] = response.meta['date_published']
                         request.meta['entry_title'] = response.meta['entry_title']
                         yield request
-                    else:    
-                        linkitem = DownloadLinkItem()
-                        linkitem['url'] = match.group().split(" ")[0].strip('"')
-                        linkitem['source'] = self.start_urls[0]
-                        linkitem['date_published'] = response.meta['date_published']
-                        linkitem['date_discovered'] = self.tz.localize(datetime.now())
-                        yield linkitem
+                    if "http://4djsonline.com/download" in match.group():
+                        request = Request(url=unicode(match.group().split(" ")[0].strip('"')), callback=self.parse_entry_html)
+                        request.meta['date_published'] = response.meta['date_published']
+                        request.meta['entry_title'] = response.meta['entry_title']
+                        yield request
+                
+            for regexpr in self.regexes:
+                iterator = regexpr.finditer(response.body)
+                for match in iterator:
+                    linkitem = DownloadLinkItem()
+                    linkitem['url'] = match.group().split(" ")[0].strip('"')
+                    linkitem['source'] = self.start_urls[0]
+                    linkitem['date_published'] = response.meta['date_published']
+                    linkitem['date_discovered'] = self.tz.localize(datetime.now())
+                    yield linkitem
         else:
             log.msg("Feed-Entry not found.", level=log.ERROR)  
                 
