@@ -97,17 +97,17 @@ class FeedSpider(BaseSpider):
                     rssFeed = feedparser.parse(response.url)
                     
                     if rssFeed.bozo == 1:
-                        log.msg(("Feed kann nicht verarbeitet werden:" + str(response.url) + ", DEACTIVATING FEED!"), level=log.WARNING)
+                        log.msg(("Feed is corrupted: " + str(response.url) + ", DEACTIVATING FEED!"), level=log.WARNING)
                         self.collection.update({"feedurl" : self.source}, {"$set" : {"active" : False, "next_crawl" : None}})     
                     else:
-                        log.msg(("Verarbeite Feed:" + rssFeed.get('title', response.url)), level=log.INFO)
+                        log.msg(("Processing Feed: " + rssFeed.get('title', response.url)), level=log.INFO)
                         if isinstance(rssFeed.entries, (list, tuple)) and len(rssFeed.entries) >= 1:
                             self.last_post = datetime.fromtimestamp(mktime(rssFeed.entries[0].get('published_parsed', rssFeed.get('updated_parsed', datetime.now().timetuple()))))
                             for entry in rssFeed.entries:
                                 if (datetime.now() - monthdelta.MonthDelta(3)) < datetime.fromtimestamp(mktime(rssFeed.get('updated_parsed', (datetime.now() - monthdelta.MonthDelta(2)).timetuple()))):
                                     if (datetime.now() - monthdelta.MonthDelta(2)) < datetime.fromtimestamp(mktime(entry.get('published_parsed', (datetime.now() - monthdelta.MonthDelta(1)).timetuple()))):
                                         if self.last_crawled < self.tz.localize(datetime.fromtimestamp(mktime(entry.get('published_parsed', (datetime.now() - monthdelta.MonthDelta(1)).timetuple())))):
-                                            log.msg(("Verarbeite Eintrag:" + entry.get('title', "unnamed entry")), level=log.INFO)
+                                            log.msg(("Processing Feed-Entry:" + entry.get('title', "unnamed entry")), level=log.INFO)
                                             for regexpr in self.regexes:
                                                 if 'description' in entry:
                                                     iterator = regexpr.finditer(str(entry.description).encode('utf-8'))
@@ -182,9 +182,9 @@ class FeedSpider(BaseSpider):
         else:
             log.msg("Feed not found, NOT crawling.", level=log.ERROR)  
         
-    def parse_entry_html(self, response):
+    def parse_entry_html(self, response):        
         log.msg("Crawling Feed-Entry " + response.meta['entry_title'], level=log.INFO)  
-        if response.status < 400:
+        if response.status < 400:           
             self.regexeslinkengine = []
             self.regexeslinkengine.append(re.compile("http\:\/\/themusicfire\.com\/goto(\w|\/)*", re.IGNORECASE))
             self.regexeslinkengine.append(re.compile("http\:\/\/4djsonline\.com\/download(\w|\/)*", re.IGNORECASE))
