@@ -1,3 +1,8 @@
 LOG_LEVEL = 'DEBUG'
-MONGODB_SERVER = 'musiccrawlerweb.de'
+MONGODB_SERVER = 'localhost'
+MONGODB_DB = 'meteor'
+MONGODB_PORT = 3001
 HTTPCACHE_ENABLED = False
+
+MONGODB_USER = None
+MONGODB_PASSWORD = None
