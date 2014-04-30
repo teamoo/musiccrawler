@@ -3,15 +3,158 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: http://doc.scrapy.org/topics/item-pipeline.html
 
-from musiccrawler.exporters import MongoDBExporter
+from datetime import datetime
+import dateutil.parser
+import json
+from operator import attrgetter
+import pkg_resources
+from pytz import timezone
+import re
+import traceback
+from urllib2 import HTTPError
+
+from apiclient.discovery import build
+from apiclient.errors import HttpError
+import facebook
+import hypem
 from py4j.java_gateway import JavaGateway, logging
 from py4j.protocol import Py4JError
 from scrapy import log, signals
 from scrapy.exceptions import DropItem
-import json
-import re
-import traceback
-import pkg_resources
+import soundcloud
+
+from musiccrawler.exporters import MongoDBExporter
+import musiccrawler.settings
+
+
+class GetMusicDownloadLinkStatisticsPipeline(object):
+    def __init__(self):
+        self.tz = timezone("Europe/Berlin")
+        self.facebookGraphAPI = facebook.GraphAPI();
+        self.soundcloudAPI = soundcloud.Client(client_id=musiccrawler.settings.SOUNDCLOUD_APP_ID);
+        
+        self.youtubeDataAPI = build(musiccrawler.settings.GOOGLE_API_SERVICE_NAME, musiccrawler.settings.GOOGLE_API_VERSION,
+    developerKey=musiccrawler.settings.GOOGLE_API_KEY)
+
+    def process_item(self, item, spider):
+        videoids = []
+        
+        if item is None or item.get("name",None) is None:
+            log.msg(("Received empty itemp (corrupted)"), level=log.DEBUG)
+            raise DropItem("Dropped empty item (corrupted)")
+        else:
+            try:
+                search_response_ids = self.youtubeDataAPI.search().list(
+                                            q=item["name"],
+                                            part="id",
+                                            maxResults=musiccrawler.settings.STATISTICS_ITEM_BASE,
+                                            type="video"
+                                            ).execute()
+    
+                for search_result in search_response_ids.get("items", []):
+                    if search_result["id"] is not None:
+                        videoids.append(search_result["id"]["videoId"]);
+                
+                try:
+                    search_response_videos = self.youtubeDataAPI.videos().list(
+                                                id=",".join(videoids),
+                                                part="statistics,snippet,id",
+                                                maxResults=musiccrawler.settings.STATISTICS_ITEM_BASE
+                                                ).execute()
+                                                
+                    if len(search_response_videos.get("items", [])) >= 1:
+                        item["youtube_name"] = search_response_videos.get("items", [])[0]["snippet"]["title"];
+                        item["youtube_date_published"] = dateutil.parser.parse(search_response_videos.get("items", [])[0]["snippet"]["publishedAt"]);
+                                                
+                    for search_result in search_response_videos.get("items", []):
+                        if search_result["statistics"] is not None and search_result["snippet"] is not None:
+                            item["youtube_comments"] += int(search_result["statistics"]["commentCount"])
+                            item["youtube_views"] += int(search_result["statistics"]["viewCount"])
+                            item["youtube_favorites"] += int(search_result["statistics"]["favoriteCount"])
+                            item["youtube_dislikes"] += int(search_result["statistics"]["dislikeCount"])
+                            item["youtube_likes"] += int(search_result["statistics"]["likeCount"])
+        
+                            if item["youtube_date_published"] < dateutil.parser.parse(search_result["snippet"]["publishedAt"]):
+                                item["youtube_date_published"] = dateutil.parser.parse(search_result["snippet"]["publishedAt"]);
+                
+                except HttpError, e:
+                    print "An HTTP error occured" 
+            except HttpError, e:
+                    print "An HTTP error occured" 
+
+            try:
+                searchresults = hypem.search(item["name"], 1)
+                
+                if searchresults is not None and searchresults.__len__() >= 1:
+                    try:
+                        searchresults = sorted(searchresults, key=attrgetter('dateposted'), reverse=True)
+            
+                        if len(searchresults) >= 1:
+                            item["hypem_name"] = searchresults[0].artist + " - " + searchresults[0].title;
+                            item["hypem_date_published"] = self.tz.localize(datetime.fromtimestamp(searchresults[0].dateposted))
+                            item["hypem_artwork_url"] = searchresults[0].thumb_url_medium;
+            
+                        for track in searchresults[:musiccrawler.settings.STATISTICS_ITEM_BASE]:
+                            item["hypem_likes"] += track.loved_count;
+                            item["hypem_posts"] += track.posted_count;
+                            
+                            if item["hypem_artwork_url"] is None:
+                                item["hypem_artwork_url"] = track.thumb_url_medium;
+                                
+                            if hasattr(track, 'itunes_link'):
+                                facebook_shares = self.facebookGraphAPI.get_object(track.itunes_link)
+                                if facebook_shares.get('shares',None) is not None:
+                                    item["facebook_shares"] += facebook_shares['shares'];
+                                elif facebook_shares.get('likes',None) is not None:
+                                    item["facebook_shares"] += facebook_shares['likes'];
+                                    
+                            if item["hypem_date_published"] < self.tz.localize(datetime.fromtimestamp(track.dateposted)):
+                                item["hypem_date_published"] = self.tz.localize(datetime.fromtimestamp(track.dateposted));
+                    except ValueError, e:
+                        print "Corrupt JSON data from hypem"            
+                    except HttpError, e:
+                        print "An HTTP error occured" 
+            except HttpError, e:
+                    print "An HTTP error occured" 
+            
+            searchresults = sorted(self.soundcloudAPI.get('/tracks', q=item["name"], limit=musiccrawler.settings.STATISTICS_ITEM_BASE, filter='public'), key=attrgetter('created_at'), reverse=True);
+
+            if len(searchresults) >= 1:
+                item["soundcloud_name"] = searchresults[0].title;
+                item["soundcloud_date_created"] = dateutil.parser.parse(searchresults[0].created_at);
+                item["name_routing"] = searchresults[0].permalink;
+                item["soundcloud_genre"] = searchresults[0].genre;
+                item["soundcloud_artwork_url"] = searchresults[0].artwork_url;
+
+            for track in searchresults:
+                if hasattr(track,'permalink_url') and track.permalink_url is not None:
+                    facebook_shares = self.facebookGraphAPI.get_object(track.permalink_url)
+                    if facebook_shares.get('shares',None) is not None:
+                        item["facebook_shares"] += facebook_shares['shares'];
+                    elif facebook_shares.get('likes',None) is not None:
+                        item["facebook_shares"] += facebook_shares['likes'];
+                
+                if hasattr(track,'video_url') and track.video_url is not None:
+                    facebook_shares =self.facebookGraphAPI.get_object(track.video_url)
+                    if facebook_shares.get('shares',None) is not None:
+                        item["facebook_shares"] += facebook_shares['shares'];
+                    elif facebook_shares.get('likes',None) is not None:
+                            item["facebook_shares"] += facebook_shares['likes'];
+                            
+                if item["soundcloud_artwork_url"] is None:
+                    item["soundcloud_artwork_url"] = track.artwork_url;
+                if item["soundcloud_genre"] is None:
+                    item["soundcloud_genre"] = track.genre; #VK Genres auch noch mitnehmen
+                    
+                item["soundcloud_comments"] += track.comment_count;
+                item["soundcloud_downloads"] += track.download_count;
+                item["soundcloud_likes"] += track.favoritings_count;
+                item["soundcloud_playbacks"] += track.playback_count;
+                item["soundcloud_date_created"] = track.created_at;
+                
+                if item["soundcloud_date_created"] < dateutil.parser.parse(track.created_at):
+                    item["soundcloud_date_created"] = dateutil.parser.parse(track.created_at);
+
 
 class CheckMusicDownloadLinkPipeline(object):
     urlregex = re.compile(

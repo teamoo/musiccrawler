@@ -10,7 +10,8 @@ class MongoDBExporter(BaseItemExporter):
         connection = pymongo.Connection(musiccrawler.settings.MONGODB_SERVER, musiccrawler.settings.MONGODB_PORT, tz_aware=True)
         self.db = connection[musiccrawler.settings.MONGODB_DB]
         log.msg("Authenticating to MongoDB", level=log.DEBUG)
-        self.db.authenticate(musiccrawler.settings.MONGODB_USER, musiccrawler.settings.MONGODB_PASSWORD)
+        if musiccrawler.settings.__dict__.has_key('MONGODB_USER') and musiccrawler.settings.__dict__.has_key('MONGODB_PASSWORD') and musiccrawler.settings.MONGODB_USER is not None:
+            self.db.authenticate(musiccrawler.settings.MONGODB_USER, musiccrawler.settings.MONGODB_PASSWORD)
         self.collection = self.db[musiccrawler.settings.MONGODB_COLLECTION]
         if self.__get_uniq_key() is not None:
             self.collection.create_index(self.__get_uniq_key(), unique=True)

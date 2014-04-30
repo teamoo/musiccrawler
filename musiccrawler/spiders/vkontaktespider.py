@@ -35,7 +35,7 @@ class VKontakteSpider(BaseSpider):
         dispatcher.connect(self.handle_spider_closed, signals.spider_closed)
         connection = pymongo.Connection(musiccrawler.settings.MONGODB_SERVER, musiccrawler.settings.MONGODB_PORT, tz_aware=True)
         self.db = connection[musiccrawler.settings.MONGODB_DB]
-        if musiccrawler.settings.__dict__.has_key('MONGODB_USER') and musiccrawler.settings.__dict__.has_key('MONGODB_PASSWORD'):
+        if musiccrawler.settings.__dict__.has_key('MONGODB_USER') and musiccrawler.settings.__dict__.has_key('MONGODB_PASSWORD') and musiccrawler.settings.MONGODB_USER is not None:
             self.db.authenticate(musiccrawler.settings.MONGODB_USER, musiccrawler.settings.MONGODB_PASSWORD)
         self.collection = self.db['sites']
         self.site = self.collection.find_one({"feedurl": kwargs.get('feedurl')})
