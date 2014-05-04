@@ -9,7 +9,9 @@ import json
 from operator import attrgetter
 import pkg_resources
 from pytz import timezone
+import random
 import re
+import time
 import traceback
 from urllib2 import HTTPError
 
@@ -38,12 +40,25 @@ class GetMusicDownloadLinkStatisticsPipeline(object):
 
     def process_item(self, item, spider):
         videoids = []
+        temp_fb_shares = 0;
+        temp_sc_comment_count = 0;
+        temp_sc_download_count = 0;
+        temp_sc_favoritings_count = 0;
+        temp_sc_playback_count = 0;
+        temp_hm_loved_count = 0;
+        temp_hm_posted_count = 0;
+        temp_yt_comment_count = 0;
+        temp_yt_favorite_count = 0;
+        temp_yt_view_count = 0;
+        temp_yt_like_count = 0;
+        temp_yt_dislike_count = 0;
         
         if item is None or item.get("name",None) is None:
             log.msg(("Received empty itemp (corrupted)"), level=log.DEBUG)
             raise DropItem("Dropped empty item (corrupted)")
         else:
             try:
+                time.sleep(5)
                 search_response_ids = self.youtubeDataAPI.search().list(
                                             q=item["name"],
                                             part="id",
@@ -68,35 +83,34 @@ class GetMusicDownloadLinkStatisticsPipeline(object):
                                                 
                     for search_result in search_response_videos.get("items", []):
                         if search_result["statistics"] is not None and search_result["snippet"] is not None:
-                            item["youtube_comments"] += int(search_result["statistics"]["commentCount"])
-                            item["youtube_views"] += int(search_result["statistics"]["viewCount"])
-                            item["youtube_favorites"] += int(search_result["statistics"]["favoriteCount"])
-                            item["youtube_dislikes"] += int(search_result["statistics"]["dislikeCount"])
-                            item["youtube_likes"] += int(search_result["statistics"]["likeCount"])
+                            temp_yt_comment_count += int(search_result["statistics"]["commentCount"])
+                            temp_yt_view_count += int(search_result["statistics"]["viewCount"])
+                            temp_yt_favorite_count += int(search_result["statistics"]["favoriteCount"])
+                            temp_yt_dislike_count += int(search_result["statistics"]["dislikeCount"])
+                            temp_yt_like_count += int(search_result["statistics"]["likeCount"])
         
                             if item["youtube_date_published"] < dateutil.parser.parse(search_result["snippet"]["publishedAt"]):
                                 item["youtube_date_published"] = dateutil.parser.parse(search_result["snippet"]["publishedAt"]);
                 
                 except HttpError, e:
-                    print "An HTTP error occured" 
+                    print e
             except HttpError, e:
-                    print "An HTTP error occured" 
+                    print e
 
             try:
+                time.sleep(5)
                 searchresults = hypem.search(item["name"], 1)
                 
-                if searchresults is not None and searchresults.__len__() >= 1:
+                if searchresults is not None:
                     try:
-                        searchresults = sorted(searchresults, key=attrgetter('dateposted'), reverse=True)
-            
                         if len(searchresults) >= 1:
                             item["hypem_name"] = searchresults[0].artist + " - " + searchresults[0].title;
                             item["hypem_date_published"] = self.tz.localize(datetime.fromtimestamp(searchresults[0].dateposted))
                             item["hypem_artwork_url"] = searchresults[0].thumb_url_medium;
             
                         for track in searchresults[:musiccrawler.settings.STATISTICS_ITEM_BASE]:
-                            item["hypem_likes"] += track.loved_count;
-                            item["hypem_posts"] += track.posted_count;
+                            temp_hm_loved_count += track.loved_count;
+                            temp_hm_posted_count += track.posted_count;
                             
                             if item["hypem_artwork_url"] is None:
                                 item["hypem_artwork_url"] = track.thumb_url_medium;
@@ -104,18 +118,26 @@ class GetMusicDownloadLinkStatisticsPipeline(object):
                             if hasattr(track, 'itunes_link'):
                                 facebook_shares = self.facebookGraphAPI.get_object(track.itunes_link)
                                 if facebook_shares.get('shares',None) is not None:
-                                    item["facebook_shares"] += facebook_shares['shares'];
+                                    temp_fb_shares += facebook_shares['shares'];
                                 elif facebook_shares.get('likes',None) is not None:
-                                    item["facebook_shares"] += facebook_shares['likes'];
+                                    temp_fb_shares += facebook_shares['likes'];
                                     
                             if item["hypem_date_published"] < self.tz.localize(datetime.fromtimestamp(track.dateposted)):
                                 item["hypem_date_published"] = self.tz.localize(datetime.fromtimestamp(track.dateposted));
                     except ValueError, e:
-                        print "Corrupt JSON data from hypem"            
-                    except HttpError, e:
-                        print "An HTTP error occured" 
-            except HttpError, e:
-                    print "An HTTP error occured" 
+                        print e           
+                    except HTTPError, e:
+                            if e.code == 403:
+                                print "Hypem Rate Throttling prevented Hypem API check, waiting for 15 to 60 seconds"
+                                time.sleep(random.randint(15, 60))
+                            else:
+                                print e.reason
+            except HTTPError, e:
+                    if e.code == 403:
+                        print "Hypem Rate Throttling prevented Hypem API check, waiting for 15 to 60 seconds"
+                        time.sleep(random.randint(15, 60))
+                    else:
+                        print e.reason
             
             searchresults = sorted(self.soundcloudAPI.get('/tracks', q=item["name"], limit=musiccrawler.settings.STATISTICS_ITEM_BASE, filter='public'), key=attrgetter('created_at'), reverse=True);
 
@@ -130,32 +152,51 @@ class GetMusicDownloadLinkStatisticsPipeline(object):
                 if hasattr(track,'permalink_url') and track.permalink_url is not None:
                     facebook_shares = self.facebookGraphAPI.get_object(track.permalink_url)
                     if facebook_shares.get('shares',None) is not None:
-                        item["facebook_shares"] += facebook_shares['shares'];
+                        temp_fb_shares += facebook_shares['shares'];
                     elif facebook_shares.get('likes',None) is not None:
-                        item["facebook_shares"] += facebook_shares['likes'];
+                        temp_fb_shares += facebook_shares['likes'];
                 
                 if hasattr(track,'video_url') and track.video_url is not None:
-                    facebook_shares =self.facebookGraphAPI.get_object(track.video_url)
+                    facebook_shares = self.facebookGraphAPI.get_object(track.video_url)
                     if facebook_shares.get('shares',None) is not None:
-                        item["facebook_shares"] += facebook_shares['shares'];
+                        temp_fb_shares += facebook_shares['shares'];
                     elif facebook_shares.get('likes',None) is not None:
-                            item["facebook_shares"] += facebook_shares['likes'];
+                            temp_fb_shares += facebook_shares['likes'];
                             
                 if item["soundcloud_artwork_url"] is None:
                     item["soundcloud_artwork_url"] = track.artwork_url;
                 if item["soundcloud_genre"] is None:
                     item["soundcloud_genre"] = track.genre; #VK Genres auch noch mitnehmen
                     
-                item["soundcloud_comments"] += track.comment_count;
-                item["soundcloud_downloads"] += track.download_count;
-                item["soundcloud_likes"] += track.favoritings_count;
-                item["soundcloud_playbacks"] += track.playback_count;
-                item["soundcloud_date_created"] = track.created_at;
+                temp_sc_comment_count += track.comment_count;
+                temp_sc_download_count += track.download_count;
+                temp_sc_favoritings_count += track.favoritings_count;
+                temp_sc_playback_count += track.playback_count;
+                item["soundcloud_date_created"] = dateutil.parser.parse(track.created_at);
                 
                 if item["soundcloud_date_created"] < dateutil.parser.parse(track.created_at):
                     item["soundcloud_date_created"] = dateutil.parser.parse(track.created_at);
-
-
+            
+            if temp_fb_shares > 0:
+                item["facebook_shares"] = temp_fb_shares
+            if "soundcloud_name" in item:
+                item["soundcloud_comments"] = temp_sc_comment_count;
+                item["soundcloud_downloads"] = temp_sc_download_count;
+                item["soundcloud_likes"] = temp_sc_favoritings_count;
+                item["soundcloud_playbacks"] = temp_sc_playback_count;
+            if "youtube_name" in item:
+                item["youtube_likes"] = temp_yt_like_count;
+                item["youtube_comments"] = temp_yt_comment_count;
+                item["youtube_views"] = temp_yt_view_count;
+                item["youtube_dislikes"] = temp_yt_dislike_count;
+                item["youtube_favorites"] = temp_yt_favorite_count;
+            if "hypem_name" in item:
+                item["hypem_likes"] = temp_hm_loved_count;
+                item["hypem_posts"] = temp_hm_posted_count;
+            
+            log.msg(("Updated item statistics:" + str(item)), level=log.DEBUG)
+            return item
+            
 class CheckMusicDownloadLinkPipeline(object):
     urlregex = re.compile(
         r'^(?:http|ftp)s?://'  # http:// or https://

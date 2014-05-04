@@ -14,7 +14,7 @@ from datetime import datetime
 from musiccrawler.items import DownloadLinkItem
 from pytz import timezone
 from scrapy import log, signals
-from scrapy.spider import BaseSpider
+from scrapy.spider import Spider
 from scrapy.xlib.pydispatch import dispatcher
 import monthdelta
 import musiccrawler.settings
@@ -27,7 +27,7 @@ reload(sys)
 sys.setdefaultencoding("utf-8")
 
 
-class VKontakteSpider(BaseSpider):        
+class VKontakteSpider(Spider):        
     name = "vkontaktespider"
     
     def __init__(self, **kwargs):

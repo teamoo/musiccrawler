@@ -15,7 +15,7 @@ from musiccrawler.items import DownloadLinkItem
 from pytz import timezone
 from scrapy import log, signals
 from scrapy.http import Request
-from scrapy.spider import BaseSpider
+from scrapy.spider import Spider
 from scrapy.xlib.pydispatch import dispatcher
 from time import mktime
 import feedparser
@@ -27,7 +27,7 @@ import pkg_resources
 import pymongo
 import re
 
-class FeedSpider(BaseSpider):        
+class FeedSpider(Spider):        
     name = "feedspider"
     
     def __init__(self, **kwargs):

@@ -2,12 +2,12 @@ from datetime import datetime, timedelta
 from musiccrawler.items import DownloadLinkItem
 from pytz import timezone
 from scrapy import log
-from scrapy.spider import BaseSpider
+from scrapy.spider import Spider
 import musiccrawler.settings
 import pymongo
 import re
 
-class CleanUpSpider(BaseSpider):        
+class CleanUpSpider(Spider):        
     name = "cleanupspider"
     
     def __init__(self, **kwargs):
@@ -21,7 +21,8 @@ class CleanUpSpider(BaseSpider):
         log.msg("Removing " + str(self.links.find({'status': 'off', 'date_published': {'$lte': (datetime.now()-timedelta(days=90))}}).count()) +  " links from Database that are OFFLINE OR UNKNOWN and older than 90 days.", level=log.INFO)
         self.links.remove({'status': 'off', 'date_published': {'$lte': (datetime.now()-timedelta(days=90))}},False)
         self.links.remove({'status': 'unknown', 'date_published': {'$lte': (datetime.now()-timedelta(days=90))}},False)
-        self.unknownlinks = list(self.links.find({'$query':{"status": 'unknown',"url": { "$not": re.compile(".*dwmp3\.com.*") } },'$orderby': {"url": 1}}))
+        #self.unknownlinks = list(self.links.find({'$query':{"status": 'unknown',"url": { "$not": re.compile(".*dwmp3\.com.*") } },'$orderby': {"url": 1}}))
+        self.unknownlinks = list(self.links.find({'$query':{"status": 'on',"url": { "$not": re.compile(".*dwmp3\.com.*") } },'$orderby': {"date_discovered": -1}}))
         log.msg("Received " + str(len(self.unknownlinks)) +  " UNKNOWN links from Database", level=log.INFO)
                   
     def parse(self, request):   

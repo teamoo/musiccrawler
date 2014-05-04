@@ -3,7 +3,7 @@ from dateutil.parser import parse
 from musiccrawler.items import DownloadLinkItem
 from pytz import timezone
 from scrapy import log, signals
-from scrapy.spider import BaseSpider
+from scrapy.spider import Spider
 from scrapy.xlib.pydispatch import dispatcher
 import json
 import math
@@ -13,7 +13,7 @@ import pkg_resources
 import pymongo
 import re
 
-class FacebookGroupSpider(BaseSpider):        
+class FacebookGroupSpider(Spider):        
     name = "facebookgroupspider"
 
     def __init__(self, **kwargs):
