@@ -18,6 +18,7 @@ from scrapy.http import Request
 from scrapy.spider import Spider
 from scrapy.xlib.pydispatch import dispatcher
 from time import mktime
+from scrapy.log import ScrapyFileLogObserver
 import feedparser
 import json
 import math
@@ -31,6 +32,7 @@ class FeedSpider(Spider):
     name = "feedspider"
     
     def __init__(self, **kwargs):
+    
         log.msg("Initializing Spider", level=log.INFO)
         dispatcher.connect(self.handle_spider_closed, signals.spider_closed)
         connection = pymongo.Connection(musiccrawler.settings.MONGODB_SERVER, musiccrawler.settings.MONGODB_PORT, tz_aware=True)
@@ -68,25 +70,24 @@ class FeedSpider(Spider):
                 decrypters = json.loads(pkg_resources.resource_string('musiccrawler.config', musiccrawler.settings.DECRYPTERS_FILE_PATH))
                 log.msg("Loaded " + str(len(decrypters)) + " decrypter", level=log.INFO)
                 
-                regex_group_count = 35
+                regex_group_size = 25
                 self.regexes = []
                 
-                for i in range(int(math.ceil(len(hosts) / regex_group_count))):
+                for i in range(int(math.ceil(len(hosts) / regex_group_size))+1):
                     hosterregex = ''
             
-                    for hoster in hosts[(i + 1) * regex_group_count - regex_group_count:(i + 1) * regex_group_count]:
-                        hosterpattern = unicode(hoster['pattern']).rstrip('\r\n').replace("/", "\/", 99).replace(":", "\:", 99).replace("\d+{", "\d{", 10).replace("++", "+", 10).replace("\r\n", "", 10).replace("|[\p{L}\w-%]+\/[\p{L}\w-%]+", "", 10).replace("decrypted", "", 10).replace("httpJDYoutube", "http", 10) + '|'
+                    for hoster in hosts[(i + 1) * regex_group_size - regex_group_size:(i + 1) * regex_group_size]:
+                        hosterpattern = unicode(hoster['pattern']).rstrip('\r\n').replace("\r\n", "", 10).replace("++","+",10).replace("decrypted:", "", 10) + '|'
                         hosterregex += hosterpattern.encode('utf-8')
+                    self.regexes.append(re.compile("'" + hosterregex.rstrip('|') + "'", re.IGNORECASE))
                     
-                    self.regexes.append(re.compile("'" + hosterregex[:-1] + "'", re.IGNORECASE))
-                    
-                for i in range(int(math.ceil(len(decrypters) / regex_group_count))):
+                for i in range(int(math.ceil(len(decrypters) / regex_group_size))+1):
                     hosterregex = ''
             
-                    for decrypter in decrypters[(i + 1) * regex_group_count - regex_group_count:(i + 1) * regex_group_count]:
+                    for decrypter in decrypters[(i + 1) * regex_group_size - regex_group_size:(i + 1) * regex_group_size]:
                         hosterpattern = unicode(decrypter['pattern']).rstrip('\r\n') + '|'
                         hosterregex += hosterpattern.encode('utf-8')
-                    self.regexes.append(re.compile("\"" + hosterregex[:-1] + "\"", re.IGNORECASE))
+                    self.regexes.append(re.compile("\"" + hosterregex.rstrip('|') + "\"", re.IGNORECASE))
     
                 log.msg("Spider initialized.", level=log.INFO)
         else:
@@ -225,7 +226,8 @@ class FeedSpider(Spider):
             if int(self._crawler.stats.get_value("log_count/ERROR", 0)) == 0:
                 log.msg("Spider finished without errors, updating site record", level=log.INFO)
                 if self.last_post and not self.last_post is None:
-                    self.collection.update({"feedurl" : self.source},{"$set" : {"last_crawled" : datetime.now(), "next_crawl" : None, "discovered_links": discovered, "last_post" : self.last_post}})
+                    log.msg("debug mode")
+                    #self.collection.update({"feedurl" : self.source},{"$set" : {"last_crawled" : datetime.now(), "next_crawl" : None, "discovered_links": discovered, "last_post" : self.last_post}})
             else:
                 log.msg("Spider finished with errors, NOT updating site record", level=log.WARNING)
                 if self.last_post and not self.last_post is None:
