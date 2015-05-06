@@ -14,6 +14,7 @@ import re
 import time
 import traceback
 from urllib2 import HTTPError
+from musiccrawler.items import FacebookInformationItem, SoundcloudInformationItem, YoutubeInformationItem, HypemInformationItem, VKInformationItem
 
 from apiclient.discovery import build
 from apiclient.errors import HttpError
@@ -53,6 +54,17 @@ class GetMusicDownloadLinkStatisticsPipeline(object):
         temp_yt_like_count = 0;
         temp_yt_dislike_count = 0;
         
+        facebook_info = FacebookInformationItem()
+        soundcloud_info = SoundcloudInformationItem()
+        youtube_info = YoutubeInformationItem();
+        hypem_info = HypemInformationItem();
+        vk_info = VKInformationItem();
+        
+        
+        if item["hoster"] == "vk.com" and 'aid' in item and 'oid' in item:
+            vk_info['audio_id'] = item['aid']
+            vk_info['owner_id'] = item['oid']
+        
         if item is None or item.get("name",None) is None:
             log.msg(("Received empty itemp (corrupted)"), level=log.DEBUG)
             raise DropItem("Dropped empty item (corrupted)")
@@ -78,8 +90,8 @@ class GetMusicDownloadLinkStatisticsPipeline(object):
                                                 ).execute()
                                                 
                     if len(search_response_videos.get("items", [])) >= 1:
-                        item["youtube_name"] = search_response_videos.get("items", [])[0]["snippet"]["title"];
-                        item["youtube_date_published"] = dateutil.parser.parse(search_response_videos.get("items", [])[0]["snippet"]["publishedAt"]);
+                        youtube_info["name"] = search_response_videos.get("items", [])[0]["snippet"]["title"];
+                        youtube_info["date_published"] = dateutil.parser.parse(search_response_videos.get("items", [])[0]["snippet"]["publishedAt"]);
                                                 
                     for search_result in search_response_videos.get("items", []):
                         if search_result["statistics"] is not None and search_result["snippet"] is not None:
@@ -89,8 +101,8 @@ class GetMusicDownloadLinkStatisticsPipeline(object):
                             temp_yt_dislike_count += int(search_result["statistics"]["dislikeCount"])
                             temp_yt_like_count += int(search_result["statistics"]["likeCount"])
         
-                            if item["youtube_date_published"] < dateutil.parser.parse(search_result["snippet"]["publishedAt"]):
-                                item["youtube_date_published"] = dateutil.parser.parse(search_result["snippet"]["publishedAt"]);
+                            if youtube_info["youtube_date_published"] < dateutil.parser.parse(search_result["snippet"]["publishedAt"]):
+                                youtube_info["youtube_date_published"] = dateutil.parser.parse(search_result["snippet"]["publishedAt"]);
                 
                 except HttpError, e:
                     print e
@@ -104,16 +116,16 @@ class GetMusicDownloadLinkStatisticsPipeline(object):
                 if searchresults is not None:
                     try:
                         if len(searchresults) >= 1:
-                            item["hypem_name"] = searchresults[0].artist + " - " + searchresults[0].title;
-                            item["hypem_date_published"] = self.tz.localize(datetime.fromtimestamp(searchresults[0].dateposted))
-                            item["hypem_artwork_url"] = searchresults[0].thumb_url_medium;
+                            hypem_info["name"] = searchresults[0].artist + " - " + searchresults[0].title;
+                            hypem_info["date_published"] = self.tz.localize(datetime.fromtimestamp(searchresults[0].dateposted))
+                            hypem_info["artwork_url"] = searchresults[0].thumb_url_medium;
             
                         for track in searchresults[:musiccrawler.settings.STATISTICS_ITEM_BASE]:
                             temp_hm_loved_count += track.loved_count;
                             temp_hm_posted_count += track.posted_count;
                             
-                            if item["hypem_artwork_url"] is None:
-                                item["hypem_artwork_url"] = track.thumb_url_medium;
+                            if hypem_info["artwork_url"] is None:
+                                hypem_info["artwork_url"] = track.thumb_url_medium;
                                 
                             if hasattr(track, 'itunes_link'):
                                 facebook_shares = self.facebookGraphAPI.get_object(track.itunes_link)
@@ -122,8 +134,8 @@ class GetMusicDownloadLinkStatisticsPipeline(object):
                                 elif facebook_shares.get('likes',None) is not None:
                                     temp_fb_shares += facebook_shares['likes'];
                                     
-                            if item["hypem_date_published"] < self.tz.localize(datetime.fromtimestamp(track.dateposted)):
-                                item["hypem_date_published"] = self.tz.localize(datetime.fromtimestamp(track.dateposted));
+                            if hypem_info["date_published"] < self.tz.localize(datetime.fromtimestamp(track.dateposted)):
+                                hypem_info["date_published"] = self.tz.localize(datetime.fromtimestamp(track.dateposted));
                     except ValueError, e:
                         print e           
                     except HTTPError, e:
@@ -139,60 +151,71 @@ class GetMusicDownloadLinkStatisticsPipeline(object):
                     else:
                         print e.reason
             
-            searchresults = sorted(self.soundcloudAPI.get('/tracks', q=item["name"], limit=musiccrawler.settings.STATISTICS_ITEM_BASE, filter='public'), key=attrgetter('created_at'), reverse=True);
+            try:
+                searchresults = sorted(self.soundcloudAPI.get('/tracks', q=item["name"], limit=musiccrawler.settings.STATISTICS_ITEM_BASE, filter='public'), key=attrgetter('created_at'), reverse=True);
 
-            if len(searchresults) >= 1:
-                item["soundcloud_name"] = searchresults[0].title;
-                item["soundcloud_date_created"] = dateutil.parser.parse(searchresults[0].created_at);
-                item["name_routing"] = searchresults[0].permalink;
-                item["soundcloud_genre"] = searchresults[0].genre;
-                item["soundcloud_artwork_url"] = searchresults[0].artwork_url;
-
-            for track in searchresults:
-                if hasattr(track,'permalink_url') and track.permalink_url is not None:
-                    facebook_shares = self.facebookGraphAPI.get_object(track.permalink_url)
-                    if facebook_shares.get('shares',None) is not None:
-                        temp_fb_shares += facebook_shares['shares'];
-                    elif facebook_shares.get('likes',None) is not None:
-                        temp_fb_shares += facebook_shares['likes'];
-                
-                if hasattr(track,'video_url') and track.video_url is not None:
-                    facebook_shares = self.facebookGraphAPI.get_object(track.video_url)
-                    if facebook_shares.get('shares',None) is not None:
-                        temp_fb_shares += facebook_shares['shares'];
-                    elif facebook_shares.get('likes',None) is not None:
+                if len(searchresults) >= 1:
+                    soundcloud_info["name"] = searchresults[0].title;
+                    soundcloud_info["date_created"] = dateutil.parser.parse(searchresults[0].created_at);
+                    item["name_routing"] = searchresults[0].permalink;
+                    soundcloud_info["genre"] = searchresults[0].genre;
+                    soundcloud_info["artwork_url"] = searchresults[0].artwork_url;
+    
+                for track in searchresults:
+                    if hasattr(track,'permalink_url') and track.permalink_url is not None:
+                        facebook_shares = self.facebookGraphAPI.get_object(track.permalink_url)
+                        if facebook_shares.get('shares',None) is not None:
+                            temp_fb_shares += facebook_shares['shares'];
+                        elif facebook_shares.get('likes',None) is not None:
                             temp_fb_shares += facebook_shares['likes'];
-                            
-                if item["soundcloud_artwork_url"] is None:
-                    item["soundcloud_artwork_url"] = track.artwork_url;
-                if item["soundcloud_genre"] is None:
-                    item["soundcloud_genre"] = track.genre; #VK Genres auch noch mitnehmen
                     
-                temp_sc_comment_count += track.comment_count;
-                temp_sc_download_count += track.download_count;
-                temp_sc_favoritings_count += track.favoritings_count;
-                temp_sc_playback_count += track.playback_count;
-                item["soundcloud_date_created"] = dateutil.parser.parse(track.created_at);
-                
-                if item["soundcloud_date_created"] < dateutil.parser.parse(track.created_at):
-                    item["soundcloud_date_created"] = dateutil.parser.parse(track.created_at);
+                    if hasattr(track,'video_url') and track.video_url is not None:
+                        facebook_shares = self.facebookGraphAPI.get_object(track.video_url)
+                        if facebook_shares.get('shares',None) is not None:
+                            temp_fb_shares += facebook_shares['shares'];
+                        elif facebook_shares.get('likes',None) is not None:
+                                temp_fb_shares += facebook_shares['likes'];
+                                
+                    if soundcloud_info["artwork_url"] is None:
+                        soundcloud_info["artwork_url"] = track.artwork_url;
+                    if soundcloud_info["genre"] is None:
+                        soundcloud_info["genre"] = track.genre; #VK Genres auch noch mitnehmen
+                        
+                    temp_sc_comment_count += track.comment_count;
+                    temp_sc_download_count += track.download_count;
+                    temp_sc_favoritings_count += track.favoritings_count;
+                    temp_sc_playback_count += track.playback_count;
+                    soundcloud_info["date_created"] = dateutil.parser.parse(track.created_at);
+                    
+                    if soundcloud_info["date_created"] < dateutil.parser.parse(track.created_at):
+                        soundcloud_info["date_created"] = dateutil.parser.parse(track.created_at);
+            except e:
+                print e
             
             if temp_fb_shares > 0:
-                item["facebook_shares"] = temp_fb_shares
-            if "soundcloud_name" in item:
-                item["soundcloud_comments"] = temp_sc_comment_count;
-                item["soundcloud_downloads"] = temp_sc_download_count;
-                item["soundcloud_likes"] = temp_sc_favoritings_count;
-                item["soundcloud_playbacks"] = temp_sc_playback_count;
-            if "youtube_name" in item:
-                item["youtube_likes"] = temp_yt_like_count;
-                item["youtube_comments"] = temp_yt_comment_count;
-                item["youtube_views"] = temp_yt_view_count;
-                item["youtube_dislikes"] = temp_yt_dislike_count;
-                item["youtube_favorites"] = temp_yt_favorite_count;
-            if "hypem_name" in item:
-                item["hypem_likes"] = temp_hm_loved_count;
-                item["hypem_posts"] = temp_hm_posted_count;
+                facebook_info["shares"] = temp_fb_shares
+                item['facebook'] = dict(facebook_info)
+                
+            if "name" in soundcloud_info:
+                soundcloud_info["comments"] = temp_sc_comment_count;
+                soundcloud_info["downloads"] = temp_sc_download_count;
+                soundcloud_info["likes"] = temp_sc_favoritings_count;
+                soundcloud_info["playbacks"] = temp_sc_playback_count;
+                item['soundcloud'] = dict(soundcloud_info)
+            if "name" in youtube_info:
+                youtube_info["likes"] = temp_yt_like_count;
+                youtube_info["comments"] = temp_yt_comment_count;
+                youtube_info["views"] = temp_yt_view_count;
+                youtube_info["dislikes"] = temp_yt_dislike_count;
+                youtube_info["favorites"] = temp_yt_favorite_count;
+                item['youtube'] = dict(youtube_info)
+            if "name" in hypem_info:
+                hypem_info["likes"] = temp_hm_loved_count;
+                hypem_info["posts"] = temp_hm_posted_count;
+                item['hypem'] = dict(hypem_info)
+            
+            if "aid" in vk_info and "oid" in vk_info:
+                item["vk"] = dict(vk_info)
             
             log.msg(("Updated item statistics:" + str(item)), level=log.DEBUG)
             return item
